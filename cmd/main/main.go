@@ -19,7 +19,11 @@ func main() {
 		views.Index().Render(r.Context(), w)
 	})
 
-	server := http.Server{Addr: "0.0.0.0:3000", Handler: handler }
+	handler.Get("/assets/*", func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/assets/", http.FileServer(http.Dir("./assets/dist/"))).ServeHTTP(w, r)
+	})
+
+	server := http.Server{Addr: ":3000", Handler: handler }
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalln(err)
