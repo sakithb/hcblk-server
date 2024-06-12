@@ -1,4 +1,4 @@
-package views
+package shared
 
 templ Base() {
 	<!DOCTYPE html>
@@ -8,8 +8,9 @@ templ Base() {
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>High Capacity Bikes | Sri Lanka</title>
 		<link rel="stylesheet" href="/assets/styles.css">
+		<script src="/assets/htmx.min.js"></script>
 	</head>
-	<body>
+	<body hx-boost="true">
 		{ children... }
 	</body>
 	</html>

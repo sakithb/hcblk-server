@@ -1,0 +1,11 @@
+package shared
+
+import "github.com/sakithb/hcblk-server/internal/templates/components"
+
+templ Page() {
+	@Base() {
+		@components.Header()
+		<main>{children...}</main>
+		@components.Footer()
+	}
+}

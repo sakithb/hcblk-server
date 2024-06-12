@@ -1,0 +1,71 @@
+package pages
+
+import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "github.com/sakithb/hcblk-server/internal/templates/components"
+
+type SignupProps struct {
+	Errors struct {
+		FirstName string
+		LastName string
+		Email string
+		Password string
+	}
+
+	Values struct {
+		FirstName string
+		LastName string
+		Email string
+		Password string
+	}
+}
+
+templ SignupForm(props *SignupProps) {
+	<form class="flex flex-col gap-3 p-4 w-[25vw] shadow-md rounded border border-gray-100 bg-white" hx-post="/auth/signup" hx-trigger="submit" hx-swap="outerHTML">
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="first-name">First name <span class="text-red-500">*</span></label>
+			if props.Errors.FirstName != "" {
+				<input class="p-1 rounded border border-red-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="first_name" id="first-name" value={ props.Values.FirstName }/>
+				<span class="text-sm text-red-500">{ props.Errors.FirstName }</span>
+			} else {
+				<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="first_name" id="first-name" value={ props.Values.FirstName }/>
+			}
+		</div>
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="last-name">Last name</label>
+			<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="last_name" id="last-name" value={ props.Values.LastName }/>
+		</div>
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="email">Email <span class="text-red-500">*</span></label>
+			if props.Errors.Email != "" {
+				<input class="p-1 rounded border border-red-300 outline-none focus:border-indigo-700 transition-colors" type="email" name="email" id="email" value={ props.Values.Email }/>
+				<span class="text-sm text-red-500">{ props.Errors.Email }</span>
+			} else {
+				<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="email" name="email" id="email" value={ props.Values.Email }/>
+			}
+		</div>
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="password">Password <span class="text-red-500">*</span></label>
+			if props.Errors.Password != "" {
+				<input class="p-1 rounded border border-red-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="password" id="password" value={ props.Values.Password }/>
+				<span class="text-sm text-red-500">{ props.Errors.Password }</span>
+				<span class="text-sm text-gray-500">Must be between 8-64 characters</span>
+			} else {
+				<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="password" id="password" value={ props.Values.Password }/>
+				<span class="text-sm text-gray-500">Must be between 8-64 characters</span>
+			}
+		</div>
+		<div class="inline-flex flex-col mt-4">
+			<button class="bg-indigo-700 text-white p-1 rounded mt-4 hover:bg-indigo-600 transition-colors">Sign up</button>
+			<a class="text-sm text-indigo-700 self-center mt-2" href="/auth/login">Already a user?</a>
+		</div>
+	</form>
+}
+
+templ Signup(props *SignupProps) {
+	@shared.Base() {
+		<main class="flex flex-col items-center justify-center gap-4 h-screen bg-gray-100">
+			@components.Logo()
+			@SignupForm(props)
+		</main>
+	}
+}
