@@ -15,12 +15,13 @@ const (
 			first_name TEXT,
 			last_name  TEXT,
 			email      TEXT UNIQUE,
+			password   TEXT,
 			created_at INTEGER
 		)
 	`
 )
 
-func InitDB() *sqlx.DB {
+func New() *sqlx.DB {
 	db, err := sqlx.Open("sqlite3", "assets/data.db")
 	if err != nil {
 		log.Fatalln(err)

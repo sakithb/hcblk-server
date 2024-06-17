@@ -4,23 +4,28 @@ import "github.com/sakithb/hcblk-server/internal/templates/shared"
 import "github.com/sakithb/hcblk-server/internal/templates/components"
 
 type SignupProps struct {
+	Success bool
+
 	Errors struct {
 		FirstName string
-		LastName string
-		Email string
-		Password string
+		LastName  string
+		Email     string
+		Password  string
 	}
 
 	Values struct {
 		FirstName string
-		LastName string
-		Email string
-		Password string
+		LastName  string
+		Email     string
+		Password  string
 	}
 }
 
 templ SignupForm(props *SignupProps) {
 	<form class="flex flex-col gap-3 p-4 w-[25vw] shadow-md rounded border border-gray-100 bg-white" hx-post="/auth/signup" hx-trigger="submit" hx-swap="outerHTML">
+		if props.Success {
+			<span class="p-4 bg-emerald-100 text-emerald-700">A verification email has been sent to the email address provided.</span>
+		}
 		<div class="flex flex-col gap-1">
 			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="first-name">First name <span class="text-red-500">*</span></label>
 			if props.Errors.FirstName != "" {

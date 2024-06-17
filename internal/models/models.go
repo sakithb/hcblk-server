@@ -9,6 +9,13 @@ type User struct {
 	Email     string `db:"email"`
 }
 
+type UnverifiedUser struct {
+	FirstName string
+	LastName  string
+	Email     string
+	Password  string
+}
+
 type Bike struct {
 	Id             string `db:"	id"`
 	Model          string `db:"model"`
