@@ -2,33 +2,29 @@ package routes
 
 import (
 	"database/sql"
-	"encoding/base64"
 	"log"
 	"net/http"
 	"net/url"
-	"sync"
-	"time"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/sakithb/hcblk-server/internal/models"
+	"github.com/sakithb/hcblk-server/internal/services"
 	"github.com/sakithb/hcblk-server/internal/templates/pages"
 	"github.com/sakithb/hcblk-server/internal/utils"
 )
 
 type AuthHandler struct {
-	Tokens   *sync.Map
-	Sessions *scs.SessionManager
-	DB       *sqlx.DB
+	Sessions    *scs.SessionManager
+	AuthService *services.AuthService
+	UserService *services.UserService
 }
 
-func NewAuthHandler(db *sqlx.DB, sm *scs.SessionManager) *AuthHandler {
+func NewAuthHandler(as *services.AuthService, us *services.UserService, sm *scs.SessionManager) *AuthHandler {
 	return &AuthHandler{
-		Tokens:   &sync.Map{},
-		Sessions: sm,
-		DB:       db,
+		Sessions:    sm,
+		AuthService: as,
+		UserService: us,
 	}
 }
 
@@ -44,6 +40,7 @@ func (h *AuthHandler) Router() chi.Router {
 	})
 
 	r.Get("/verify", h.Verify)
+	r.Get("/logout", h.Logout)
 	r.Post("/login", h.Login)
 	r.Post("/signup", h.Signup)
 
@@ -53,30 +50,36 @@ func (h *AuthHandler) Router() chi.Router {
 func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 	t := r.URL.Query().Get("t")
 	if t == "" {
-		http.Error(w, "Bad request", 400)
+		http.Error(w, "Invalid token", 400)
 		return
 	}
 
-	uv, ok := h.Tokens.Load(t)
-
-	if !ok {
-		http.Error(w, "Bad request", 400)
-		return
-	}
-
-	u := uv.(models.UnverifiedUser)
-
-	id, err := uuid.NewRandom()
+	u, err := h.AuthService.VerifyToken(t)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Server error", 500)
+		if err == sql.ErrNoRows {
+			http.Error(w, "Invalid token", 400)
+		} else {
+			utils.HandleServerError(w, err)
+		}
+
 		return
 	}
 
-	_, err = h.DB.Exec("INSERT INTO users VALUES(?,?,?,?,?,?)", id.String(), u.FirstName, u.LastName, u.Email, u.Password, time.Now().Unix())
+	exists, err := h.UserService.UserExists(u.Email)
+	if exists {
+		http.Error(w, "User with email already exists", 400)
+		return
+	}
+
+	err = h.UserService.CreateUser(u.FirstName, u.LastName, u.Email, u.Hash)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, "Server error", 500)
+		utils.HandleServerError(w, err)
+		return
+	}
+
+	err = h.AuthService.DeleteToken(t)
+	if err != nil {
+		utils.HandleServerError(w, err)
 		return
 	}
 
@@ -88,26 +91,36 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	rememberMe := r.FormValue("remember_me")
 
-	hash := utils.GenerateHashFromPassword([]byte(password))
+	props := pages.LoginProps{
+		Email:      email,
+		Password:   password,
+		RememberMe: rememberMe != "",
+	}
 
-	u := models.User{}
-	err := h.DB.Get(&u, "SELECT id,first_name,last_name,email FROM users WHERE email = ? AND password = ?", email, hash)
-
-	if err == sql.ErrNoRows {
-		props := pages.LoginProps{}
-
-		props.Error = true
-		props.Email = email
-		props.Password = password
-		props.RememberMe = rememberMe != ""
-
-		pages.LoginForm(&props).Render(r.Context(), w)
-	} else if err != nil {
+	valid, err := h.AuthService.VerifyPassword(password, email)
+	if err != nil {
 		log.Println(err)
-		http.Error(w, http.StatusText(500), 500)
+		props.ServerError = true
+		pages.LoginForm(&props).Render(r.Context(), w)
+		return
+	}
+
+	if !valid {
+		props.Invalid = true
+		pages.LoginForm(&props).Render(r.Context(), w)
+		return
+	}
+
+	u, err := h.UserService.GetUserByEmail(email)
+	if err != nil {
+		log.Println(err)
+		props.ServerError = true
+		pages.LoginForm(&props).Render(r.Context(), w)
 	} else {
 		h.Sessions.Put(r.Context(), "user", u)
-		http.Redirect(w, r, "/", http.StatusFound)
+		h.Sessions.RememberMe(r.Context(), props.RememberMe)
+
+		w.Header().Add("HX-Redirect", "/")
 	}
 }
 
@@ -117,47 +130,49 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 
-	props := pages.SignupProps{Success: true}
+	props := pages.SignupProps{}
+	props.Values.FirstName = fname
+	props.Values.LastName = lname
+	props.Values.Email = email
+	props.Values.Password = password
 
 	if fname == "" {
 		props.Errors.FirstName = "This field is required"
-		props.Success = false
 	}
 
 	if email == "" {
 		props.Errors.Email = "This field is required"
-		props.Success = false
 	}
 
 	if password == "" {
 		props.Errors.Password = "This field is required"
-		props.Success = false
 	} else if len(password) < 8 || len(password) > 64 {
 		props.Errors.Password = "The password must be between 8-64 characters"
-		props.Success = false
 	}
 
-	hash := utils.GenerateHashFromPassword([]byte(password))
-
-	props.Values.FirstName = fname
-	props.Values.LastName = lname
-	props.Values.Email = email
-	props.Values.Password = hash
-
-	if props.Success {
-		b := utils.GenerateRandomBytes(32)
-		t := base64.StdEncoding.EncodeToString(b)
-
-		h.Tokens.Store(t, models.UnverifiedUser{
+	if props.Errors.Email == "" && props.Errors.FirstName == "" && props.Errors.LastName == "" && props.Errors.Password == "" {
+		hash := h.AuthService.GenerateHash(password)
+		ou := &models.OnboardingUser{
 			FirstName: fname,
 			LastName:  lname,
 			Email:     email,
-			Password:  hash,
-		})
+			Hash:      hash,
+		}
 
-		// TODO: Email token
-		log.Println("http://localhost:3000/auth/verify?t=" + url.QueryEscape(t))
+		t, err := h.AuthService.GenerateToken(ou)
+		if err != nil {
+			log.Println(err)
+			props.ServerError = true
+		} else {
+			log.Println("http://localhost:3000/auth/verify?t=" + url.QueryEscape(t))
+			props.Emailed = true
+		}
 	}
 
 	pages.SignupForm(&props).Render(r.Context(), w)
+}
+
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	h.Sessions.Clear(r.Context())
+	http.Redirect(w, r, "/", http.StatusFound)
 }

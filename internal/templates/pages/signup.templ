@@ -4,7 +4,8 @@ import "github.com/sakithb/hcblk-server/internal/templates/shared"
 import "github.com/sakithb/hcblk-server/internal/templates/components"
 
 type SignupProps struct {
-	Success bool
+	Emailed     bool
+	ServerError bool
 
 	Errors struct {
 		FirstName string
@@ -22,9 +23,11 @@ type SignupProps struct {
 }
 
 templ SignupForm(props *SignupProps) {
-	<form class="flex flex-col gap-3 p-4 w-[25vw] shadow-md rounded border border-gray-100 bg-white" hx-post="/auth/signup" hx-trigger="submit" hx-swap="outerHTML">
-		if props.Success {
+	<form class="flex flex-col gap-3 p-4 w-[25vw] shadow-md rounded border border-neutral-100 bg-white" hx-post="/auth/signup" hx-trigger="submit" hx-swap="outerHTML">
+		if props.Emailed {
 			<span class="p-4 bg-emerald-100 text-emerald-700">A verification email has been sent to the email address provided.</span>
+		} else if props.Emailed {
+			<span class="p-4 bg-red-100 text-red-700">An unknown error has occured. Please try again later.</span>
 		}
 		<div class="flex flex-col gap-1">
 			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="first-name">First name <span class="text-red-500">*</span></label>
@@ -32,12 +35,12 @@ templ SignupForm(props *SignupProps) {
 				<input class="p-1 rounded border border-red-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="first_name" id="first-name" value={ props.Values.FirstName }/>
 				<span class="text-sm text-red-500">{ props.Errors.FirstName }</span>
 			} else {
-				<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="first_name" id="first-name" value={ props.Values.FirstName }/>
+				<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="first_name" id="first-name" value={ props.Values.FirstName }/>
 			}
 		</div>
 		<div class="flex flex-col gap-1">
 			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="last-name">Last name</label>
-			<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="last_name" id="last-name" value={ props.Values.LastName }/>
+			<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="text" name="last_name" id="last-name" value={ props.Values.LastName }/>
 		</div>
 		<div class="flex flex-col gap-1">
 			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="email">Email <span class="text-red-500">*</span></label>
@@ -45,7 +48,7 @@ templ SignupForm(props *SignupProps) {
 				<input class="p-1 rounded border border-red-300 outline-none focus:border-indigo-700 transition-colors" type="email" name="email" id="email" value={ props.Values.Email }/>
 				<span class="text-sm text-red-500">{ props.Errors.Email }</span>
 			} else {
-				<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="email" name="email" id="email" value={ props.Values.Email }/>
+				<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="email" name="email" id="email" value={ props.Values.Email }/>
 			}
 		</div>
 		<div class="flex flex-col gap-1">
@@ -53,10 +56,10 @@ templ SignupForm(props *SignupProps) {
 			if props.Errors.Password != "" {
 				<input class="p-1 rounded border border-red-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="password" id="password" value={ props.Values.Password }/>
 				<span class="text-sm text-red-500">{ props.Errors.Password }</span>
-				<span class="text-sm text-gray-500">Must be between 8-64 characters</span>
+				<span class="text-sm text-neutral-500">Must be between 8-64 characters</span>
 			} else {
-				<input class="p-1 rounded border border-gray-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="password" id="password" value={ props.Values.Password }/>
-				<span class="text-sm text-gray-500">Must be between 8-64 characters</span>
+				<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="password" id="password" value={ props.Values.Password }/>
+				<span class="text-sm text-neutral-500">Must be between 8-64 characters</span>
 			}
 		</div>
 		<div class="inline-flex flex-col mt-4">
@@ -68,7 +71,7 @@ templ SignupForm(props *SignupProps) {
 
 templ Signup(props *SignupProps) {
 	@shared.Base() {
-		<main class="flex flex-col items-center justify-center gap-4 h-screen bg-gray-100">
+		<main class="flex flex-col items-center justify-center gap-4 h-screen bg-neutral-100">
 			@components.Logo()
 			@SignupForm(props)
 		</main>

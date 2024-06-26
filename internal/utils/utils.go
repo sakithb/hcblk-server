@@ -2,14 +2,13 @@ package utils
 
 import (
 	"crypto/rand"
-	"encoding/base64"
-	"fmt"
 	"log"
-
-	"golang.org/x/crypto/argon2"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
-func GenerateRandomBytes(len int) []byte  {
+func GenerateRandomBytes(len int) []byte {
 	b := make([]byte, len)
 
 	_, err := rand.Read(b)
@@ -20,20 +19,23 @@ func GenerateRandomBytes(len int) []byte  {
 	return b
 }
 
+func HandleServerError(w http.ResponseWriter, err error) {
+	log.Fatalln(err)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
 
-func GenerateHashFromPassword(pwd []byte) string {
-	const (
-		m uint32 = 46 * 1024;
-		t uint32 = 1;
-		p uint8 = 1;
-	)
+func HandleHTTPCode(w http.ResponseWriter, code int) {
+	http.Error(w, http.StatusText(code), code)
+}
 
-	salt := GenerateRandomBytes(16)
-	hash := argon2.IDKey(pwd, salt, t, m, p, 32)
+func FormatInteger(i int) string {
+	str := strconv.Itoa(i)
+	a := []string{}
 
-	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
-	b64Hash := base64.RawStdEncoding.EncodeToString(hash)
+	for i := (len(str) % 3) - 1; len(str) > 0; i = 2 {
+		a = append(a, str[:i+1])
+		str = str[i+1:]
+	}
 
-	encodedHash := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, m, t, p, b64Salt, b64Hash)
-	return encodedHash
+	return strings.Join(a, ",")
 }

@@ -1,0 +1,167 @@
+package pages
+
+import "github.com/sakithb/hcblk-server/internal/templates/shared"
+
+templ selectWithDropDown(name string, value string, inputName string, attrs templ.Attributes) {
+	<div
+		class="relative px-4 py-2 rounded border cursor-pointer min-w-32 inline-flex items-center justify-between data-[disabled]:bg-neutral-100 data-[disabled]:pointer-events-none"
+		x-data={ "{ open: false, value: '" + value + "', search: '' }" }
+		x-effect="$dispatch('select', { value }); $el.dataset.value = value"
+		@click="open = ! open"
+		:style="open && { border: '1px solid rgb(67 56 202)' }"
+		data-value={ value }
+		{ attrs... }
+	>
+		<input type="hidden" name={ inputName } x-model="value"/>
+		<span class="select-none" x-text={ "value == '' ? '" + name + "' : value" }>{ name }</span>
+		<svg x-show="! open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12"><path d="M6 8.825c-.2 0-.4-.1-.5-.2l-3.3-3.3c-.3-.3-.3-.8 0-1.1.3-.3.8-.3 1.1 0l2.7 2.7 2.7-2.7c.3-.3.8-.3 1.1 0 .3.3.3.8 0 1.1l-3.2 3.2c-.2.2-.4.3-.6.3Z"></path></svg>
+		<svg x-show="open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12"><path d="M6 4c-.2 0-.4.1-.5.2L2.2 7.5c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0L6 5.9l2.7 2.7c.3.3.8.3 1.1 0 .3-.3.3-.8 0-1.1L6.6 4.3C6.4 4.1 6.2 4 6 4Z"></path></svg>
+		<div class="absolute top-full left-0 mt-1 flex flex-col bg-white shadow rounded border w-full max-h-64 overflow-auto z-10" x-show="open" @click.outside="open = false" x-transition x-cloak>
+			<input class="p-2 outline-none border-b" type="text" placeholder="Search" x-model="search" @click.stop/>
+			{ children... }
+		</div>
+	</div>
+}
+
+templ selectWithDropDownOption(value string) {
+	<span class="p-2 w-full hover:bg-neutral-200 select-none cursor-pointer" @click={ "value = '" + value + "'" } x-show="$el.textContent.toLowerCase().includes(search.toLowerCase())">{ value }</span>
+}
+
+templ CreateListingModels(brand string, value string, models []string) {
+	@selectWithDropDown("Model", value, "model", templ.Attributes{"id": "models", "hx-get": "/user/listings/create/years", "hx-trigger": "select", "hx-target": "#years", "hx-swap": "outerHTML", "hx-vals": "js:{brand:document.getElementById('brands').dataset.value,model:event.detail.value}", "data-disabled": brand == ""}) {
+		if brand != "" {
+			for _, model := range models {
+				@selectWithDropDownOption(model)
+			}
+		}
+	}
+}
+
+templ CreateListingYears(brand string, model string, value string, years []string) {
+	@selectWithDropDown("Year", value, "year", templ.Attributes{"id": "years", "data-disabled": brand == "" || model == ""}) {
+		if brand != "" && model != "" {
+			for _, year := range years {
+				@selectWithDropDownOption(year)
+			}
+		}
+	}
+}
+
+templ CreateListingDistricts(province string, value string, districts []string) {
+	@selectWithDropDown("District", value, "district", templ.Attributes{"id": "districts", "hx-get": "/user/listings/create/cities", "hx-trigger": "select", "hx-target": "#cities", "hx-swap": "outerHTML", "hx-vals": "js:{province:document.getElementById('provinces').dataset.value,district:event.detail.value}", "data-disabled": province == ""}) {
+		for _, district := range districts {
+			@selectWithDropDownOption(district)
+		}
+	}
+}
+
+templ CreateListingCities(province string, district string, value string, cities []string) {
+	@selectWithDropDown("City", value, "city", templ.Attributes{"id": "cities", "data-disabled": province == "" || district == ""}) {
+		for _, city := range cities {
+			@selectWithDropDownOption(city)
+		}
+	}
+}
+
+type CreateListingProps struct {
+	Brands    []string
+	Provinces []string
+
+	Errors struct {
+		Model    string
+		Price    string
+		Phone    string
+		Location string
+		Images   string
+	}
+
+	Values struct {
+		Brand    string
+		Model    string
+		Year     string
+		Price    string
+		Province string
+		District string
+		City     string
+		Phone    string
+	}
+}
+
+templ CreateListingForm(p *CreateListingProps) {
+	<form class="grow mt-8 border-t py-8 flex flex-col items-start" hx-post="/user/listings/create" hx-encoding="multipart/form-data" hx-trigger="submit" hx-swap="outerHTML">
+		<span class="text-l mb-4">Model <span class="text-red-500">*</span></span>
+		<div class="flex gap-2">
+			@selectWithDropDown("Brand", p.Values.Brand, "brand", templ.Attributes{"id": "brands", "hx-get": "/user/listings/create/models", "hx-trigger": "select", "hx-target": "#models", "hx-swap": "outerHTML", "hx-vals": "js:{brand:event.detail.value}"}) {
+				for _, brand := range p.Brands {
+					@selectWithDropDownOption(brand)
+				}
+			}
+			@CreateListingModels(p.Values.Brand, p.Values.Model, []string{})
+			@CreateListingYears(p.Values.Brand, p.Values.Model, p.Values.Year, []string{})
+		</div>
+		if p.Errors.Model != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Model }</span>
+		}
+		<span class="text-l my-4">Price <span class="text-red-500">*</span></span>
+		<input class="outline-none border rounded focus:border-indigo-700 p-2" type="number" name="price" placeholder="Rs." min="0" value={ p.Values.Price } required/>
+		if p.Errors.Price != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Price }</span>
+		}
+		<span class="text-l my-4">Location <span class="text-red-500">*</span></span>
+		<div class="flex gap-2">
+			@selectWithDropDown("Province", p.Values.Province, "province", templ.Attributes{"id": "provinces", "hx-get": "/user/listings/create/districts", "hx-trigger": "select", "hx-target": "#districts", "hx-swap": "outerHTML", "hx-vals": "js:{province:event.detail.value}"}) {
+				for _, province := range p.Provinces {
+					@selectWithDropDownOption(province)
+				}
+			}
+			@CreateListingDistricts(p.Values.Province, p.Values.District, []string{})
+			@CreateListingCities(p.Values.Province, p.Values.District, p.Values.City, []string{})
+		</div>
+		if p.Errors.Location != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Location }</span>
+		}
+		<span class="text-l my-4">Phone No. <span class="text-red-500">*</span></span>
+		<input class="outline-none border rounded focus:border-indigo-700 p-2" type="text" name="phone" placeholder="+94" value={ p.Values.Phone } maxlength="10" @input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1')" required/>
+		if p.Errors.Phone != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Phone }</span>
+		}
+		<span class="text-l mt-4">Images <span class="text-red-500">*</span></span>
+		<span class="text-sm text-neutral-500 mb-4">Atleast 03 images</span>
+		<div id="files" class="grid grid-cols-[repeat(auto-fill,12rem)] gap-2 w-full" hx-preserve="true">
+			<input type="file" name="images" x-effect="dt = new DataTransfer(); files.forEach(f => dt.items.add(f)); $el.files = dt.files" hidden/>
+			<template x-for="(file, index) in files">
+				<div class="size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
+					<input type="file" accept="image/*" @change="files[index] = $el.files[0]" hidden/>
+					<img x-effect="r = new FileReader();r.onload=(e) => {$el.src = e.target.result};r.readAsDataURL(file)"/>
+				</div>
+			</template>
+			<div class="size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
+				<input type="file" accept="image/*" @change="$el.files[0].size > 1024 * 1024 * 3 ? open = true : files.push($el.files[0])" hidden/>
+				<svg class="size-full fill-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M11.75 4.5a.75.75 0 0 1 .75.75V11h5.75a.75.75 0 0 1 0 1.5H12.5v5.75a.75.75 0 0 1-1.5 0V12.5H5.25a.75.75 0 0 1 0-1.5H11V5.25a.75.75 0 0 1 .75-.75Z"></path></svg>
+				<span class="text-neutral-400 font-bold">Upload (max. 3mb)</span>
+			</div>
+		</div>
+		if p.Errors.Images != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Images }</span>
+		}
+		<div class="w-full border-t my-8"></div>
+		<button class="bg-indigo-700 text-white px-4 py-2 rounded hover:bg-indigo-600 transition-colors">Create listing</button>
+	</form>
+}
+
+templ CreateListing(p *CreateListingProps) {
+	@shared.Page() {
+		<div class="py-8 w-[60vw] mx-auto h-full" x-data="{ open: false, files: [] }">
+			<div class="flex justify-between items-center">
+				<span class="text-2xl font-bold">Create Listing</span>
+			</div>
+			@CreateListingForm(p)
+			<div x-show="open" class="w-screen h-screen fixed top-0 left-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center" x-cloak>
+				<div class="p-4 bg-white rounded inline-flex gap-2" @click.outside="open = false">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M13 17.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.25-8.25a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0v-4.5Z"></path><path d="M9.836 3.244c.963-1.665 3.365-1.665 4.328 0l8.967 15.504c.963 1.667-.24 3.752-2.165 3.752H3.034c-1.926 0-3.128-2.085-2.165-3.752Zm3.03.751a1.002 1.002 0 0 0-1.732 0L2.168 19.499A1.002 1.002 0 0 0 3.034 21h17.932a1.002 1.002 0 0 0 .866-1.5L12.866 3.994Z"></path></svg>
+					<span>The file is bigger than 3 mb.</span>
+				</div>
+			</div>
+		</div>
+	}
+}

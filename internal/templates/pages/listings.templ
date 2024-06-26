@@ -1,0 +1,49 @@
+package pages
+
+import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "github.com/sakithb/hcblk-server/internal/models"
+import "strconv"
+import "github.com/sakithb/hcblk-server/internal/utils"
+
+templ Listings(listings []models.Listing) {
+	@shared.Page() {
+		<div class="py-8 w-[60vw] mx-auto h-full">
+			<div class="flex justify-between items-center">
+				<span class="text-2xl font-bold">Your Listings</span>
+				<a class="p-2 bg-indigo-700 text-white rounded inline-flex items-center gap-2" href="/user/listings/create">
+					<svg class="fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"></path></svg>
+					<span>Create listing</span>
+				</a>
+			</div>
+			<div class="grow mt-8 border-t py-8 grid grid-cols-[repeat(auto-fill,1fr)] gap-2 w-full">
+				if len(listings) == 0 {
+					<span class="text-2xl text-neutral-400 font-bold justify-self-center">You haven't created any listings yet</span>
+				}
+				for _, l := range listings {
+					<div class="w-64 rounded border flex flex-col p-2">
+						<div class="relative aspect-square" x-data={ "{ active: 0, len: " + strconv.Itoa(len(l.Images)) + " }" }>
+							<div class="size-full">
+								for i, img := range l.Images {
+									<img class="size-full object-contain" src={ "/assets/listings/" + l.Id + "/" + img } x-show={ "active == " + strconv.Itoa(i) } x-cloak/>
+								}
+							</div>
+							<button class="absolute top-1/2 -left-6 -translate-y-1/2 size-16 cursor-pointer" @click="active = active == 0 ? len - 1 : active - 1">
+								<svg class="w-full h-full fill-neutral-600/60 hover:fill-neutral-600/100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m8.854 11.646 5.792-5.792a.5.5 0 0 1 .854.353v11.586a.5.5 0 0 1-.854.353l-5.792-5.792a.5.5 0 0 1 0-.708Z"></path></svg>
+							</button>
+							<button class="absolute top-1/2 -right-6 -translate-y-1/2 size-16 cursor-pointer" @click="active = active == len - 1 ? 0 : active + 1">
+								<svg class="w-full h-full fill-neutral-600/60 hover:fill-neutral-600/100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m15.146 12.354-5.792 5.792a.5.5 0 0 1-.854-.353V6.207a.5.5 0 0 1 .854-.353l5.792 5.792a.5.5 0 0 1 0 .708Z"></path></svg>
+							</button>
+						</div>
+						<span class="mt-4 text-neutral-500">{ l.Model.Brand }</span>
+						<span>{ l.Model.Model } { strconv.Itoa(l.Model.Year) }</span>
+						<span class="my-4 text-lg">Rs. { utils.FormatInteger(l.Price) }</span>
+						<div class="flex gap-2">
+							<a class="text-neutral-600 hover:text-indigo-700" href={templ.SafeURL("/user/listing/" + l.Id)}>View</a>
+							<a class="text-neutral-600 hover:text-indigo-700" href={templ.SafeURL("/user/listing/" + l.Id + "/edit")}>Edit</a>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	}
+}

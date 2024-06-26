@@ -1,0 +1,41 @@
+package pages
+
+import "github.com/sakithb/hcblk-server/internal/models"
+import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "strconv"
+import "github.com/sakithb/hcblk-server/internal/utils"
+
+templ Listing(l *models.Listing) {
+	@shared.Page() {
+		<div class="py-8 w-[60vw] mx-auto h-full" x-data="{ open: false, files: [] }">
+			<div class="flex justify-between items-center">
+				<span class="text-2xl font-bold">Your Listing</span>
+				<a class="p-2 bg-indigo-700 text-white rounded inline-flex items-center gap-2" href={ templ.SafeURL("/user/listing/" + l.Id + "/edit") }>
+					<svg class="fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"></path></svg>
+					<span>Edit</span>
+				</a>
+			</div>
+			<div class="grow mt-8 border-t py-8 flex">
+				<div class="w-1/2 flex flex-col">
+					<span class="text-xl text-neutral-400">{ l.Model.Brand }</span>
+					<span class="text-3xl font-bold">{ l.Model.Model }</span>
+					<span class="text-xl text-neutral-400">{ strconv.Itoa(l.Model.Year) }</span>
+					<span class="text-xl">Rs. { utils.FormatInteger(l.Price) }</span>
+				</div>
+				<div class="relative w-1/2 aspect-square" x-data={ "{ active: 0, len: " + strconv.Itoa(len(l.Images)) + " }" }>
+					<div class="size-full">
+						for i, img := range l.Images {
+							<img class="size-full object-contain" src={ "/assets/listings/" + l.Id + "/" + img } x-show={ "active == " + strconv.Itoa(i) } x-cloak/>
+						}
+					</div>
+					<button class="absolute top-1/2 -left-6 -translate-y-1/2 size-16 cursor-pointer" @click="active = active == 0 ? len - 1 : active - 1">
+						<svg class="w-full h-full fill-neutral-600/60 hover:fill-neutral-600/100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m8.854 11.646 5.792-5.792a.5.5 0 0 1 .854.353v11.586a.5.5 0 0 1-.854.353l-5.792-5.792a.5.5 0 0 1 0-.708Z"></path></svg>
+					</button>
+					<button class="absolute top-1/2 -right-6 -translate-y-1/2 size-16 cursor-pointer" @click="active = active == len - 1 ? 0 : active + 1">
+						<svg class="w-full h-full fill-neutral-600/60 hover:fill-neutral-600/100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m15.146 12.354-5.792 5.792a.5.5 0 0 1-.854-.353V6.207a.5.5 0 0 1 .854-.353l5.792 5.792a.5.5 0 0 1 0 .708Z"></path></svg>
+					</button>
+				</div>
+			</div>
+		</div>
+	}
+}

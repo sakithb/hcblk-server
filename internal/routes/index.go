@@ -14,7 +14,7 @@ func NewIndexHandler() *IndexHandler {
 	return &IndexHandler{}
 }
 
-func (h *IndexHandler) Route() chi.Router {
+func (h *IndexHandler) Router() chi.Router {
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
