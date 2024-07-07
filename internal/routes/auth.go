@@ -8,7 +8,6 @@ import (
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
-	"github.com/sakithb/hcblk-server/internal/models"
 	"github.com/sakithb/hcblk-server/internal/services"
 	"github.com/sakithb/hcblk-server/internal/templates/pages"
 	"github.com/sakithb/hcblk-server/internal/utils"
@@ -39,15 +38,15 @@ func (h *AuthHandler) Router() chi.Router {
 		pages.Signup(&pages.SignupProps{}).Render(r.Context(), w)
 	})
 
-	r.Get("/verify", h.Verify)
-	r.Get("/logout", h.Logout)
-	r.Post("/login", h.Login)
-	r.Post("/signup", h.Signup)
+	r.Get("/verify", h.GetVerify)
+	r.Get("/logout", h.GetLogout)
+	r.Post("/login", h.PostLogin)
+	r.Post("/signup", h.PostSignup)
 
 	return r
 }
 
-func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) GetVerify(w http.ResponseWriter, r *http.Request) {
 	t := r.URL.Query().Get("t")
 	if t == "" {
 		http.Error(w, "Invalid token", 400)
@@ -71,7 +70,7 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.UserService.CreateUser(u.FirstName, u.LastName, u.Email, u.Hash)
+	err = h.UserService.CreateUser(u.FirstName, u.LastName, u.Email, u.Password)
 	if err != nil {
 		utils.HandleServerError(w, err)
 		return
@@ -86,7 +85,7 @@ func (h *AuthHandler) Verify(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/auth/login", http.StatusFound)
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) PostLogin(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	password := r.FormValue("password")
 	rememberMe := r.FormValue("remember_me")
@@ -124,7 +123,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) PostSignup(w http.ResponseWriter, r *http.Request) {
 	fname := r.FormValue("first_name")
 	lname := r.FormValue("last_name")
 	email := r.FormValue("email")
@@ -152,11 +151,11 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	if props.Errors.Email == "" && props.Errors.FirstName == "" && props.Errors.LastName == "" && props.Errors.Password == "" {
 		hash := h.AuthService.GenerateHash(password)
-		ou := &models.OnboardingUser{
+		ou := &services.OnboardingUser{
 			FirstName: fname,
 			LastName:  lname,
 			Email:     email,
-			Hash:      hash,
+			Password:  hash,
 		}
 
 		t, err := h.AuthService.GenerateToken(ou)
@@ -172,7 +171,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	pages.SignupForm(&props).Render(r.Context(), w)
 }
 
-func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) GetLogout(w http.ResponseWriter, r *http.Request) {
 	h.Sessions.Clear(r.Context())
 	http.Redirect(w, r, "/", http.StatusFound)
 }

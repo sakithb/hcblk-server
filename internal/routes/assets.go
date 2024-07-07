@@ -24,16 +24,16 @@ func (h *AssetsHandler) Router() chi.Router {
 
 	r.Use(middleware.Compress(5, "image/*", "text/*"))
 
-	r.Get("/users/{userID}", h.Users)
-	r.Get("/*", h.Generic)
+	r.Get("/users/{id}", h.GetUserPic)
+	r.Get("/*", h.GetAll)
 
 	return r
 }
 
-func (h *AssetsHandler) Users(w http.ResponseWriter, r *http.Request) {
-	userID := r.PathValue("userID")
-	if f, err := os.Open("./assets/dist/users/" + userID); os.IsNotExist(err) {
-		f, err = os.Open("./assets/dist/user-circle.webp")
+func (h *AssetsHandler) GetUserPic(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if f, err := os.Open("assets/dist/users/" + id + ".png"); os.IsNotExist(err) {
+		f, err = os.Open("assets/dist/user-circle.webp")
 		if err != nil {
 			http.Error(w, http.StatusText(500), 500)
 			return
@@ -53,7 +53,7 @@ func (h *AssetsHandler) Users(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *AssetsHandler) Generic(w http.ResponseWriter, r *http.Request) {
+func (h *AssetsHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	http.StripPrefix("/assets/",
-		http.FileServer(http.Dir("./assets/dist/"))).ServeHTTP(w, r)
+		http.FileServer(http.Dir("assets/dist/"))).ServeHTTP(w, r)
 }

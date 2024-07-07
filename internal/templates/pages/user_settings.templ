@@ -1,0 +1,104 @@
+package pages
+
+import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "github.com/sakithb/hcblk-server/internal/utils"
+import "github.com/sakithb/hcblk-server/internal/templates/components"
+
+type UserSettingsChangePasswordFormProps struct {
+	Success bool
+	Error   string
+
+	OldPassword     string
+	NewPassword     string
+	ConfirmPassword string
+}
+
+templ UserSettingsChangePasswordForm(props *UserSettingsChangePasswordFormProps) {
+	<form class="flex flex-col items-start gap-2" hx-post="/me/settings/password" hx-trigger="submit">
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="oldPassword">Old Password</label>
+			<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="old_password" id="oldPassword" value={ props.OldPassword }/>
+		</div>
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="newPassword">New Password</label>
+			<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="new_password" id="newPassword" value={ props.NewPassword }/>
+		</div>
+		<div class="flex flex-col gap-1">
+			<label class="[&:has(+_:focus)]:text-indigo-700 transition-colors" for="confirmPassword">Confirm Password</label>
+			<input class="p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors" type="password" name="confirm_password" id="confirmPassword" value={ props.ConfirmPassword }/>
+		</div>
+		if props.Error != "" {
+			<span class="p-4 bg-red-100 text-red-700">{ props.Error }</span>
+		} else if props.Success {
+			<span class="p-4 bg-emerald-100 text-emerald-700">Password successfully changed!</span>
+		}
+		<button class="py-1 px-4 text-white bg-indigo-700 rounded border-2 border-white">Save</button>
+	</form>
+}
+
+templ UserSettingsProfilePhotoForm(err string, success bool) {
+	<div id="profilePicForm" class="flex flex-col gap-4 w-full p-4 border rounded">
+		if err != "" {
+			<span id="profilePicFeedback" class="p-4 bg-red-100 text-red-700">{ err }</span>
+		} else if success {
+			<span id="profilePicFeedback" class="p-4 bg-emerald-100 text-emerald-700">Profile photo changed successfully!</span>
+			@components.Header()
+		} else {
+			<span id="profilePicFeedback" class="hidden"></span>
+		}
+		<div class="flex items-center gap-2 ">
+			<div class="size-24 border-2 rounded-full p-1 overflow-hidden">
+				<input
+					x-ref="profilePic"
+					type="file"
+					accept="image/png,image/jpeg"
+					name="profile_pic"
+					hx-post="/me/settings/photo"
+					hx-trigger="change"
+					hx-include="this"
+					hx-target="#profilePicForm"
+					hx-swap="outerHTML"
+					hx-encoding="multipart/form-data"
+					hx-select-oob="#header"
+					hidden
+				/>
+				<img class="object-cover rounded-full" src={ "/assets/users/" + utils.GetUserFromContext(ctx).Id }/>
+			</div>
+			<div class="grow inline-flex flex-col">
+				<span class="text-xl">{ utils.GetUserFromContext(ctx).FirstName } { utils.GetUserFromContext(ctx).LastName }</span>
+				<span class="text-neutral-500">{ utils.GetUserFromContext(ctx).Email }</span>
+			</div>
+			<button
+				class="py-1 px-4 text-white bg-indigo-700 rounded border-2 border-white"
+				@click="$refs.profilePic.click()"
+			>
+				Change photo
+			</button>
+		</div>
+	</div>
+}
+
+templ UserSettings() {
+	@shared.Page() {
+		<div class="py-8 w-[60vw] mx-auto h-full">
+			<div class="flex justify-between items-center">
+				<span class="text-2xl font-bold">Settings</span>
+			</div>
+			<div class="grow mt-8 border-t py-8 flex gap-4" x-data="{ activeTab: 0 }">
+				<div class="flex flex-col gap-2 w-56">
+					<button
+						class="data-[active]:bg-indigo-700 data-[active]:text-white bg-neutral-200 p-2 rounded transition-colors"
+						:data-active="activeTab == 0"
+						@click="activeTab = 0"
+					>
+						Account
+					</button>
+				</div>
+				<div class="flex flex-col items-start gap-4 grow" x-show="activeTab == 0" x-transition>
+					@UserSettingsProfilePhotoForm("", false)
+					@UserSettingsChangePasswordForm(&UserSettingsChangePasswordFormProps{})
+				</div>
+			</div>
+		</div>
+	}
+}

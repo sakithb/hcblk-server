@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/sakithb/hcblk-server/internal/models"
 	"github.com/sakithb/hcblk-server/internal/utils"
 	"golang.org/x/crypto/argon2"
 )
@@ -16,15 +15,22 @@ type AuthService struct {
 	DB *sqlx.DB
 }
 
+type OnboardingUser struct {
+	FirstName string `db:"first_name"`
+	LastName  string `db:"last_name"`
+	Email     string `db:"email"`
+	Password  string `db:"password"`
+}
+
 const (
 	TOKEN_LENGTH = 32
 )
 
 const (
-	MEMORY uint32 = 46 * 1024;
-	TIME uint32 = 1;
-	THREADS uint8 = 1;
-	LENGTH uint32 = 32;
+	MEMORY  uint32 = 46 * 1024
+	TIME    uint32 = 1
+	THREADS uint8  = 1
+	LENGTH  uint32 = 32
 )
 
 func (s *AuthService) GenerateHash(pwd string) string {
@@ -46,8 +52,8 @@ func (s *AuthService) VerifyPassword(pwd string, email string) (bool, error) {
 	}
 
 	components := strings.Split(storedHash, "$")
-	b64StoredHash := components[len(components) - 1]
-	b64Salt := components[len(components) - 2]
+	b64StoredHash := components[len(components)-1]
+	b64Salt := components[len(components)-2]
 
 	salt, err := base64.RawStdEncoding.DecodeString(b64Salt)
 	if err != nil {
@@ -60,7 +66,7 @@ func (s *AuthService) VerifyPassword(pwd string, email string) (bool, error) {
 	return subtle.ConstantTimeCompare([]byte(b64Hash), []byte(b64StoredHash)) > 0, nil
 }
 
-func (s *AuthService) GenerateToken(u *models.OnboardingUser) (string, error) {
+func (s *AuthService) GenerateToken(u *OnboardingUser) (string, error) {
 	bytes := utils.GenerateRandomBytes(TOKEN_LENGTH)
 	token := base64.StdEncoding.EncodeToString(bytes)
 
@@ -70,20 +76,27 @@ func (s *AuthService) GenerateToken(u *models.OnboardingUser) (string, error) {
 		u.FirstName,
 		u.LastName,
 		u.Email,
-		u.Hash,
+		u.Password,
 	)
 
 	return token, err
 }
 
-func (s *AuthService) VerifyToken(token string) (*models.OnboardingUser, error) {
-	u := &models.OnboardingUser{}
-	err := s.DB.Get(&u, "SELECT first_name, last_name, email, hash FROM tokens WHERE token = ?", token)
+func (s *AuthService) VerifyToken(token string) (*OnboardingUser, error) {
+	u := OnboardingUser{}
+	err := s.DB.Get(&u, "SELECT first_name, last_name, email, password FROM tokens WHERE token = ?", token)
 
-	return u, err
+	return &u, err
 }
 
 func (s *AuthService) DeleteToken(token string) error {
 	_, err := s.DB.Exec("DELETE FROM tokens WHERE token = ?", token)
+	return err
+}
+
+func (s *AuthService) ChangePassword(uid string, pwd string) error {
+	hash := s.GenerateHash(pwd)
+	_, err := s.DB.Exec("UPDATE users SET password = ? WHERE id = ?", hash, uid)
+
 	return err
 }

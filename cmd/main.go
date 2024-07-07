@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/alexedwards/scs/sqlite3store"
@@ -32,11 +33,16 @@ func main() {
 
 	authService := &services.AuthService{DB: db}
 	userService := &services.UserService{DB: db}
+	listingService := &services.ListingService{DB: db}
+	uiService := &services.UIService{DB: db}
 
-	h.Mount("/", routes.NewIndexHandler().Router())
+	h.Mount("/", routes.NewIndexHandler(listingService, uiService).Router())
 	h.Mount("/assets", routes.NewAssetsHandler().Router())
 	h.Mount("/auth", routes.NewAuthHandler(authService, userService, sm).Router())
+	h.Mount("/me", routes.NewMeHandler(userService, uiService, listingService, authService).Router())
 	h.Mount("/user", routes.NewUserHandler(userService).Router())
+	h.Mount("/listing", routes.NewListingHandler(listingService).Router())
 
+	log.Println("Starting server...")
 	server.StartServer(h)
 }

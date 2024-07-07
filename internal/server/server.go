@@ -11,7 +11,7 @@ import (
 
 func StartServer(h http.Handler) {
 	s := http.Server{
-		Addr: ":3000",
+		Addr: ":8080",
 		Handler: h,
 	}
 

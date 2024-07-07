@@ -1,9 +1,375 @@
 package pages
 
 import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "github.com/sakithb/hcblk-server/internal/models"
+import "github.com/sakithb/hcblk-server/internal/templates/components"
 
-templ Index() {
+type IndexProps struct {
+	Listings []*models.Listing
+
+	Categories []string
+	Brands     []string
+	Provinces  []string
+	Models     []string
+	Years      []string
+	Districts  []string
+	Cities     []string
+
+	Values struct {
+		SortBy   string
+		Category string
+
+		Price struct {
+			Min string
+			Max string
+		}
+		Mileage struct {
+			Min string
+			Max string
+		}
+		EngineCapacity struct {
+			Min string
+			Max string
+		}
+
+		Brand    string
+		Model    string
+		Year     string
+		City     string
+		District string
+		Province string
+
+		Used string
+	}
+}
+
+type IndexResultsProps struct {
+	Listings []*models.Listing
+
+	Models    []string
+	Years     []string
+	Districts []string
+	Cities    []string
+}
+
+templ IndexResults(props *IndexResultsProps) {
+	<div id="results" class="flex flex-col gap-4 grow">
+		if len(props.Listings) == 0 {
+			<span class="text-2xl text-neutral-400 font-bold self-center">You haven't created any listings yet</span>
+		} else {
+			for _, l := range props.Listings {
+				@components.ListingCard(l)
+			}
+		}
+	</div>
+	if props.Models != nil {
+		if len(props.Models) > 0 {
+			@components.Select(&components.SelectProps{
+				DisplayName: "Model",
+				InputName:   "model",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "models", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{model: event.target.dataset.value, year: ''}", "hx-swap-oob": "true"},
+			}) {
+				for _, model := range props.Models {
+					@components.SelectOption(&components.SelectOptionProps{Value: model})
+				}
+			}
+		} else {
+			@components.Select(&components.SelectProps{
+				DisplayName: "Model",
+				InputName:   "model",
+				Attrs:       templ.Attributes{"id": "models", "data-disabled": "true", "hx-swap-oob": "true"},
+			})
+		}
+	}
+	if props.Years != nil {
+		if len(props.Years) > 0 {
+			@components.Select(&components.SelectProps{
+				DisplayName: "Year",
+				InputName:   "year",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "years", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{year: event.target.dataset.value}", "hx-swap-oob": "true"},
+			}) {
+				for _, year := range props.Years {
+					@components.SelectOption(&components.SelectOptionProps{Value: year})
+				}
+			}
+		} else {
+			@components.Select(&components.SelectProps{
+				DisplayName: "Year",
+				InputName:   "year",
+				Attrs:       templ.Attributes{"id": "years", "data-disabled": "true", "hx-swap-oob": "true"},
+			})
+		}
+	}
+	if props.Districts != nil {
+		if len(props.Districts) > 0 {
+			@components.Select(&components.SelectProps{
+				DisplayName: "District",
+				InputName:   "district",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "districts", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{district: event.target.dataset.value}", "hx-swap-oob": "true"},
+			}) {
+				for _, district := range props.Districts {
+					@components.SelectOption(&components.SelectOptionProps{Value: district})
+				}
+			}
+		} else {
+			@components.Select(&components.SelectProps{
+				DisplayName: "District",
+				InputName:   "district",
+				Attrs:       templ.Attributes{"id": "districts", "data-disabled": "true", "hx-swap-oob": "true"},
+			})
+		}
+	}
+	if props.Cities != nil {
+		if len(props.Cities) > 0 {
+			@components.Select(&components.SelectProps{
+				DisplayName: "City",
+				InputName:   "city",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "cities", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{city: event.target.dataset.value}", "hx-swap-oob": "true"},
+			}) {
+				for _, city := range props.Cities {
+					@components.SelectOption(&components.SelectOptionProps{Value: city})
+				}
+			}
+		} else {
+			@components.Select(&components.SelectProps{
+				DisplayName: "City",
+				InputName:   "city",
+				Attrs:       templ.Attributes{"id": "cities", "data-disabled": "true", "hx-swap-oob": "true"},
+			})
+		}
+	}
+}
+
+templ Index(props *IndexProps) {
 	@shared.Page() {
-
+		<div class="flex py-8 w-[60vw] grow self-center gap-4">
+			<div class="flex flex-col w-56 gap-4">
+				<div class="flex flex-col gap-2 pb-4 border-b">
+					<span>Sort by</span>
+					<div class="flex flex-col gap-2">
+						@components.Select(&components.SelectProps{
+							DisplayName: "Sort by",
+							InputName:   "sort_by",
+							Attrs:       templ.Attributes{"id": "sortBy", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{sort_by: document.getElementById('sortBy').dataset.value}"},
+						}) {
+							@components.SelectOption(&components.SelectOptionProps{Name: "Date - Newest first", Value: "listed_at_desc", Selected: props.Values.SortBy == "" || props.Values.SortBy == "listed_at_desc"})
+							@components.SelectOption(&components.SelectOptionProps{Name: "Date - Oldest first", Value: "listed_at_asc", Selected: props.Values.SortBy == "listed_at_asc"})
+							@components.SelectOption(&components.SelectOptionProps{Name: "Price - Highest first", Value: "price_desc", Selected: props.Values.SortBy == "price_desc"})
+							@components.SelectOption(&components.SelectOptionProps{Name: "Price - Lowest first", Value: "price_asc", Selected: props.Values.SortBy == "price_asc"})
+							@components.SelectOption(&components.SelectOptionProps{Name: "Mileage - Highest first", Value: "mileage_desc", Selected: props.Values.SortBy == "mileage_desc"})
+							@components.SelectOption(&components.SelectOptionProps{Name: "Mileage - Lowest first", Value: "mileage_asc", Selected: props.Values.SortBy == "mileage_asc"})
+						}
+					</div>
+				</div>
+				<div class="flex flex-col gap-2">
+					@components.Select(&components.SelectProps{
+						DisplayName: "Category",
+						InputName:   "category",
+						Searchable:  true,
+						Clearable:   true,
+						Attrs:       templ.Attributes{"id": "categories", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{category: event.target.dataset.value}"},
+					}) {
+						for _, category := range props.Categories {
+							@components.SelectOption(&components.SelectOptionProps{Value: category, Selected: props.Values.Category == category})
+						}
+					}
+				</div>
+				<div class="flex flex-col gap-2 py-4 border-y">
+					<div class="flex flex-col gap-2">
+						@components.Select(&components.SelectProps{
+							DisplayName: "Brand",
+							InputName:   "brand",
+							Searchable:  true,
+							Clearable:   true,
+							Attrs:       templ.Attributes{"id": "brands", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{brand: event.target.dataset.value, model: '', year: ''}"},
+						}) {
+							for _, brand := range props.Brands {
+								@components.SelectOption(&components.SelectOptionProps{Value: brand, Selected: props.Values.Brand == brand})
+							}
+						}
+					</div>
+					<div class="flex flex-col gap-2">
+						if len(props.Models) > 0 {
+							@components.Select(&components.SelectProps{
+								DisplayName: "Model",
+								InputName:   "model",
+								Searchable:  true,
+								Clearable:   true,
+								Attrs:       templ.Attributes{"id": "models", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{model: event.target.dataset.value, year: ''}"},
+							}) {
+								for _, model := range props.Models {
+									@components.SelectOption(&components.SelectOptionProps{Value: model, Selected: props.Values.Model == model})
+								}
+							}
+						} else {
+							@components.Select(&components.SelectProps{
+								DisplayName: "Model",
+								InputName:   "model",
+								Attrs:       templ.Attributes{"id": "models", "data-disabled": "true"},
+							})
+						}
+					</div>
+					<div class="flex flex-col gap-2">
+						if len(props.Years) > 0 {
+							@components.Select(&components.SelectProps{
+								DisplayName: "Year",
+								InputName:   "year",
+								Searchable:  true,
+								Clearable:   true,
+								Attrs:       templ.Attributes{"id": "years", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{year: event.target.dataset.value}"},
+							}) {
+								for _, year := range props.Years {
+									@components.SelectOption(&components.SelectOptionProps{Value: year, Selected: props.Values.Year == year})
+								}
+							}
+						} else {
+							@components.Select(&components.SelectProps{
+								DisplayName: "Year",
+								InputName:   "year",
+								Attrs:       templ.Attributes{"id": "years", "data-disabled": "true"},
+							})
+						}
+					</div>
+				</div>
+				<div class="flex flex-col gap-2 py-4 border-y">
+					<div class="flex flex-col gap-2">
+						@components.Select(&components.SelectProps{
+							DisplayName: "Province",
+							InputName:   "province",
+							Searchable:  true,
+							Clearable:   true,
+							Attrs:       templ.Attributes{"id": "provinces", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{province: event.target.dataset.value}"},
+						}) {
+							for _, province := range props.Provinces {
+								@components.SelectOption(&components.SelectOptionProps{Value: province, Selected: props.Values.Province == province})
+							}
+						}
+					</div>
+					<div class="flex flex-col gap-2">
+						if len(props.Districts) > 0 {
+							@components.Select(&components.SelectProps{
+								DisplayName: "District",
+								InputName:   "district",
+								Searchable:  true,
+								Clearable:   true,
+								Attrs:       templ.Attributes{"id": "districts", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{district: event.target.dataset.value}"},
+							}) {
+								for _, district := range props.Districts {
+									@components.SelectOption(&components.SelectOptionProps{Value: district, Selected: props.Values.District == district})
+								}
+							}
+						} else {
+							@components.Select(&components.SelectProps{
+								DisplayName: "District",
+								InputName:   "district",
+								Attrs:       templ.Attributes{"id": "districts", "data-disabled": "true"},
+							})
+						}
+					</div>
+					<div class="flex flex-col gap-2">
+						if len(props.Cities) > 0 {
+							@components.Select(&components.SelectProps{
+								DisplayName: "City",
+								InputName:   "city",
+								Searchable:  true,
+								Clearable:   true,
+								Attrs:       templ.Attributes{"id": "cities", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{city: event.target.dataset.value}"},
+							}) {
+								for _, city := range props.Cities {
+									@components.SelectOption(&components.SelectOptionProps{Value: city, Selected: props.Values.City == city})
+								}
+							}
+						} else {
+							@components.Select(&components.SelectProps{
+								DisplayName: "City",
+								InputName:   "city",
+								Attrs:       templ.Attributes{"id": "cities", "data-disabled": "true"},
+							})
+						}
+					</div>
+				</div>
+				<div class="flex flex-col gap-2">
+					<span>Price</span>
+					<div x-data="{ min: NaN, max: NaN }">
+						<div class="flex justify-between gap-4">
+							<input
+								class="w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700"
+								type="number"
+								min="0"
+								placeholder="Min"
+								x-model="min"
+								value={ props.Values.Price.Min }
+							/>
+							<input
+								class="w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700"
+								type="number"
+								min="0"
+								placeholder="Max"
+								x-model="max"
+								value={ props.Values.Price.Max }
+							/>
+						</div>
+						<button class="bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2" hx-get="/" hx-trigger="click" hx-swap="outerHTML" hx-target="#results" hx-vals="js:{price: (a = event.target.parentElement, (a._x_dataStack[0].min || '') + ',' + (a._x_dataStack[0].max || ''))}">Apply</button>
+					</div>
+				</div>
+				<div class="flex flex-col gap-2">
+					<span>Mileage</span>
+					<div x-data="{ min: NaN, max: NaN }">
+						<div class="flex justify-between gap-4">
+							<input
+								class="w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700"
+								type="number"
+								min="0"
+								placeholder="Min"
+								x-model="min"
+								value={ props.Values.Mileage.Min }
+							/>
+							<input
+								class="w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700"
+								type="number"
+								min="0"
+								placeholder="Max"
+								x-model="max"
+								value={ props.Values.Mileage.Max }
+							/>
+						</div>
+						<button class="bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2" hx-get="/" hx-trigger="click" hx-swap="outerHTML" hx-target="#results" hx-vals="js:{mileage: (a = event.target.parentElement, (a._x_dataStack[0].min || '') + ',' + (a._x_dataStack[0].max || ''))}">Apply</button>
+					</div>
+				</div>
+				<div class="flex flex-col gap-2">
+					<span>Engine capacity</span>
+					<div x-data="{ min: NaN, max: NaN }">
+						<div class="flex justify-between gap-4">
+							<input
+								class="w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700"
+								type="number"
+								min="0"
+								placeholder="Min"
+								x-model="min"
+								value={ props.Values.EngineCapacity.Min }
+							/>
+							<input
+								class="w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700"
+								type="number"
+								min="0"
+								placeholder="Max"
+								x-model="max"
+								value={ props.Values.EngineCapacity.Max }
+							/>
+						</div>
+						<button class="bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2" hx-get="/" hx-trigger="click" hx-swap="outerHTML" hx-target="#results" hx-vals="js:{engine_capacity: (a = event.target.parentElement, (a._x_dataStack[0].min || '') + ',' + (a._x_dataStack[0].max || ''))}">Apply</button>
+					</div>
+				</div>
+			</div>
+			@IndexResults(&IndexResultsProps{Listings: props.Listings})
+		</div>
 	}
 }

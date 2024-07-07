@@ -11,8 +11,58 @@ import "io"
 import "bytes"
 
 import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "github.com/sakithb/hcblk-server/internal/models"
+import "github.com/sakithb/hcblk-server/internal/templates/components"
 
-func Index() templ.Component {
+type IndexProps struct {
+	Listings []*models.Listing
+
+	Categories []string
+	Brands     []string
+	Provinces  []string
+	Models     []string
+	Years      []string
+	Districts  []string
+	Cities     []string
+
+	Values struct {
+		SortBy   string
+		Category string
+
+		Price struct {
+			Min string
+			Max string
+		}
+		Mileage struct {
+			Min string
+			Max string
+		}
+		EngineCapacity struct {
+			Min string
+			Max string
+		}
+
+		Brand    string
+		Model    string
+		Year     string
+		City     string
+		District string
+		Province string
+
+		Used string
+	}
+}
+
+type IndexResultsProps struct {
+	Listings []*models.Listing
+
+	Models    []string
+	Years     []string
+	Districts []string
+	Cities    []string
+}
+
+func IndexResults(props *IndexResultsProps) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -25,18 +75,637 @@ func Index() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var2 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"results\" class=\"flex flex-col gap-4 grow\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if len(props.Listings) == 0 {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"text-2xl text-neutral-400 font-bold self-center\">You haven't created any listings yet</span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			for _, l := range props.Listings {
+				templ_7745c5c3_Err = components.ListingCard(l).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if props.Models != nil {
+			if len(props.Models) > 0 {
+				templ_7745c5c3_Var2 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, model := range props.Models {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: model}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Model",
+					InputName:   "model",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "models", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{model: event.target.dataset.value, year: ''}", "hx-swap-oob": "true"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Model",
+					InputName:   "model",
+					Attrs:       templ.Attributes{"id": "models", "data-disabled": "true", "hx-swap-oob": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		if props.Years != nil {
+			if len(props.Years) > 0 {
+				templ_7745c5c3_Var3 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, year := range props.Years {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: year}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Year",
+					InputName:   "year",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "years", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{year: event.target.dataset.value}", "hx-swap-oob": "true"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var3), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Year",
+					InputName:   "year",
+					Attrs:       templ.Attributes{"id": "years", "data-disabled": "true", "hx-swap-oob": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		if props.Districts != nil {
+			if len(props.Districts) > 0 {
+				templ_7745c5c3_Var4 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, district := range props.Districts {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: district}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "District",
+					InputName:   "district",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "districts", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{district: event.target.dataset.value}", "hx-swap-oob": "true"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "District",
+					InputName:   "district",
+					Attrs:       templ.Attributes{"id": "districts", "data-disabled": "true", "hx-swap-oob": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		if props.Cities != nil {
+			if len(props.Cities) > 0 {
+				templ_7745c5c3_Var5 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, city := range props.Cities {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: city}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "City",
+					InputName:   "city",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "cities", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{city: event.target.dataset.value}", "hx-swap-oob": "true"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "City",
+					InputName:   "city",
+					Attrs:       templ.Attributes{"id": "cities", "data-disabled": "true", "hx-swap-oob": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		if !templ_7745c5c3_IsBuffer {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteTo(templ_7745c5c3_W)
+		}
+		return templ_7745c5c3_Err
+	})
+}
+
+func Index(props *IndexProps) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+		if !templ_7745c5c3_IsBuffer {
+			templ_7745c5c3_Buffer = templ.GetBuffer()
+			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Var7 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 			if !templ_7745c5c3_IsBuffer {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex py-8 w-[60vw] grow self-center gap-4\"><div class=\"flex flex-col w-56 gap-4\"><div class=\"flex flex-col gap-2 pb-4 border-b\"><span>Sort by</span><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var8 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+				if !templ_7745c5c3_IsBuffer {
+					templ_7745c5c3_Buffer = templ.GetBuffer()
+					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+				}
+				templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Name: "Date - Newest first", Value: "listed_at_desc", Selected: props.Values.SortBy == "" || props.Values.SortBy == "listed_at_desc"}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Name: "Date - Oldest first", Value: "listed_at_asc", Selected: props.Values.SortBy == "listed_at_asc"}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Name: "Price - Highest first", Value: "price_desc", Selected: props.Values.SortBy == "price_desc"}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Name: "Price - Lowest first", Value: "price_asc", Selected: props.Values.SortBy == "price_asc"}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Name: "Mileage - Highest first", Value: "mileage_desc", Selected: props.Values.SortBy == "mileage_desc"}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Name: "Mileage - Lowest first", Value: "mileage_asc", Selected: props.Values.SortBy == "mileage_asc"}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				if !templ_7745c5c3_IsBuffer {
+					_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+				}
+				return templ_7745c5c3_Err
+			})
+			templ_7745c5c3_Err = components.Select(&components.SelectProps{
+				DisplayName: "Sort by",
+				InputName:   "sort_by",
+				Attrs:       templ.Attributes{"id": "sortBy", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{sort_by: document.getElementById('sortBy').dataset.value}"},
+			}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var8), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var9 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+				if !templ_7745c5c3_IsBuffer {
+					templ_7745c5c3_Buffer = templ.GetBuffer()
+					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+				}
+				for _, category := range props.Categories {
+					templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: category, Selected: props.Values.Category == category}).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				if !templ_7745c5c3_IsBuffer {
+					_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+				}
+				return templ_7745c5c3_Err
+			})
+			templ_7745c5c3_Err = components.Select(&components.SelectProps{
+				DisplayName: "Category",
+				InputName:   "category",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "categories", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{category: event.target.dataset.value}"},
+			}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col gap-2 py-4 border-y\"><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var10 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+				if !templ_7745c5c3_IsBuffer {
+					templ_7745c5c3_Buffer = templ.GetBuffer()
+					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+				}
+				for _, brand := range props.Brands {
+					templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: brand, Selected: props.Values.Brand == brand}).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				if !templ_7745c5c3_IsBuffer {
+					_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+				}
+				return templ_7745c5c3_Err
+			})
+			templ_7745c5c3_Err = components.Select(&components.SelectProps{
+				DisplayName: "Brand",
+				InputName:   "brand",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "brands", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{brand: event.target.dataset.value, model: '', year: ''}"},
+			}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var10), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if len(props.Models) > 0 {
+				templ_7745c5c3_Var11 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, model := range props.Models {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: model, Selected: props.Values.Model == model}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Model",
+					InputName:   "model",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "models", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{model: event.target.dataset.value, year: ''}"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var11), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Model",
+					InputName:   "model",
+					Attrs:       templ.Attributes{"id": "models", "data-disabled": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if len(props.Years) > 0 {
+				templ_7745c5c3_Var12 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, year := range props.Years {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: year, Selected: props.Values.Year == year}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Year",
+					InputName:   "year",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "years", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{year: event.target.dataset.value}"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var12), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "Year",
+					InputName:   "year",
+					Attrs:       templ.Attributes{"id": "years", "data-disabled": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"flex flex-col gap-2 py-4 border-y\"><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Var13 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+				templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+				if !templ_7745c5c3_IsBuffer {
+					templ_7745c5c3_Buffer = templ.GetBuffer()
+					defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+				}
+				for _, province := range props.Provinces {
+					templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: province, Selected: props.Values.Province == province}).Render(ctx, templ_7745c5c3_Buffer)
+					if templ_7745c5c3_Err != nil {
+						return templ_7745c5c3_Err
+					}
+				}
+				if !templ_7745c5c3_IsBuffer {
+					_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+				}
+				return templ_7745c5c3_Err
+			})
+			templ_7745c5c3_Err = components.Select(&components.SelectProps{
+				DisplayName: "Province",
+				InputName:   "province",
+				Searchable:  true,
+				Clearable:   true,
+				Attrs:       templ.Attributes{"id": "provinces", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{province: event.target.dataset.value}"},
+			}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var13), templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if len(props.Districts) > 0 {
+				templ_7745c5c3_Var14 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, district := range props.Districts {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: district, Selected: props.Values.District == district}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "District",
+					InputName:   "district",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "districts", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{district: event.target.dataset.value}"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var14), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "District",
+					InputName:   "district",
+					Attrs:       templ.Attributes{"id": "districts", "data-disabled": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"flex flex-col gap-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if len(props.Cities) > 0 {
+				templ_7745c5c3_Var15 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+					templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
+					if !templ_7745c5c3_IsBuffer {
+						templ_7745c5c3_Buffer = templ.GetBuffer()
+						defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
+					}
+					for _, city := range props.Cities {
+						templ_7745c5c3_Err = components.SelectOption(&components.SelectOptionProps{Value: city, Selected: props.Values.City == city}).Render(ctx, templ_7745c5c3_Buffer)
+						if templ_7745c5c3_Err != nil {
+							return templ_7745c5c3_Err
+						}
+					}
+					if !templ_7745c5c3_IsBuffer {
+						_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
+					}
+					return templ_7745c5c3_Err
+				})
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "City",
+					InputName:   "city",
+					Searchable:  true,
+					Clearable:   true,
+					Attrs:       templ.Attributes{"id": "cities", "hx-get": "/", "hx-trigger": "change", "hx-target": "#results", "hx-swap": "outerHTML", "hx-vals": "js:{city: event.target.dataset.value}"},
+				}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var15), templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = components.Select(&components.SelectProps{
+					DisplayName: "City",
+					InputName:   "city",
+					Attrs:       templ.Attributes{"id": "cities", "data-disabled": "true"},
+				}).Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"flex flex-col gap-2\"><span>Price</span><div x-data=\"{ min: NaN, max: NaN }\"><div class=\"flex justify-between gap-4\"><input class=\"w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700\" type=\"number\" min=\"0\" placeholder=\"Min\" x-model=\"min\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var16 string
+			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(props.Values.Price.Min)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/index.templ`, Line: 309, Col: 38}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <input class=\"w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700\" type=\"number\" min=\"0\" placeholder=\"Max\" x-model=\"max\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var17 string
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(props.Values.Price.Max)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/index.templ`, Line: 317, Col: 38}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><button class=\"bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2\" hx-get=\"/\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#results\" hx-vals=\"js:{price: (a = event.target.parentElement, (a._x_dataStack[0].min || &#39;&#39;) + &#39;,&#39; + (a._x_dataStack[0].max || &#39;&#39;))}\">Apply</button></div></div><div class=\"flex flex-col gap-2\"><span>Mileage</span><div x-data=\"{ min: NaN, max: NaN }\"><div class=\"flex justify-between gap-4\"><input class=\"w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700\" type=\"number\" min=\"0\" placeholder=\"Min\" x-model=\"min\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var18 string
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(props.Values.Mileage.Min)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/index.templ`, Line: 333, Col: 40}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <input class=\"w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700\" type=\"number\" min=\"0\" placeholder=\"Max\" x-model=\"max\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var19 string
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(props.Values.Mileage.Max)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/index.templ`, Line: 341, Col: 40}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><button class=\"bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2\" hx-get=\"/\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#results\" hx-vals=\"js:{mileage: (a = event.target.parentElement, (a._x_dataStack[0].min || &#39;&#39;) + &#39;,&#39; + (a._x_dataStack[0].max || &#39;&#39;))}\">Apply</button></div></div><div class=\"flex flex-col gap-2\"><span>Engine capacity</span><div x-data=\"{ min: NaN, max: NaN }\"><div class=\"flex justify-between gap-4\"><input class=\"w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700\" type=\"number\" min=\"0\" placeholder=\"Min\" x-model=\"min\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var20 string
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(props.Values.EngineCapacity.Min)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/index.templ`, Line: 357, Col: 47}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> <input class=\"w-1/2 py-1 px-2 outline-none border rounded hover:border-indigo-700\" type=\"number\" min=\"0\" placeholder=\"Max\" x-model=\"max\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var21 string
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(props.Values.EngineCapacity.Max)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/index.templ`, Line: 365, Col: 47}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><button class=\"bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2\" hx-get=\"/\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#results\" hx-vals=\"js:{engine_capacity: (a = event.target.parentElement, (a._x_dataStack[0].min || &#39;&#39;) + &#39;,&#39; + (a._x_dataStack[0].max || &#39;&#39;))}\">Apply</button></div></div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = IndexResults(&IndexResultsProps{Listings: props.Listings}).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
 			}
 			if !templ_7745c5c3_IsBuffer {
 				_, templ_7745c5c3_Err = io.Copy(templ_7745c5c3_W, templ_7745c5c3_Buffer)
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = shared.Page().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = shared.Page().Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

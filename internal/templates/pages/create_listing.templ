@@ -1,99 +1,104 @@
 package pages
 
 import "github.com/sakithb/hcblk-server/internal/templates/shared"
+import "github.com/sakithb/hcblk-server/internal/templates/components"
+import "strings"
 
-templ selectWithDropDown(name string, value string, inputName string, attrs templ.Attributes) {
-	<div
-		class="relative px-4 py-2 rounded border cursor-pointer min-w-32 inline-flex items-center justify-between data-[disabled]:bg-neutral-100 data-[disabled]:pointer-events-none"
-		x-data={ "{ open: false, value: '" + value + "', search: '' }" }
-		x-effect="$dispatch('select', { value }); $el.dataset.value = value"
-		@click="open = ! open"
-		:style="open && { border: '1px solid rgb(67 56 202)' }"
-		data-value={ value }
-		{ attrs... }
-	>
-		<input type="hidden" name={ inputName } x-model="value"/>
-		<span class="select-none" x-text={ "value == '' ? '" + name + "' : value" }>{ name }</span>
-		<svg x-show="! open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12"><path d="M6 8.825c-.2 0-.4-.1-.5-.2l-3.3-3.3c-.3-.3-.3-.8 0-1.1.3-.3.8-.3 1.1 0l2.7 2.7 2.7-2.7c.3-.3.8-.3 1.1 0 .3.3.3.8 0 1.1l-3.2 3.2c-.2.2-.4.3-.6.3Z"></path></svg>
-		<svg x-show="open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12"><path d="M6 4c-.2 0-.4.1-.5.2L2.2 7.5c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0L6 5.9l2.7 2.7c.3.3.8.3 1.1 0 .3-.3.3-.8 0-1.1L6.6 4.3C6.4 4.1 6.2 4 6 4Z"></path></svg>
-		<div class="absolute top-full left-0 mt-1 flex flex-col bg-white shadow rounded border w-full max-h-64 overflow-auto z-10" x-show="open" @click.outside="open = false" x-transition x-cloak>
-			<input class="p-2 outline-none border-b" type="text" placeholder="Search" x-model="search" @click.stop/>
-			{ children... }
-		</div>
-	</div>
-}
+type CreateListingFormProps struct {
+	Errors struct {
+		Model       string
+		Price       string
+		Mileage     string
+		Description string
+		PhoneNos    string
+		Condition   string
+		Location    string
+		Images      string
+	}
 
-templ selectWithDropDownOption(value string) {
-	<span class="p-2 w-full hover:bg-neutral-200 select-none cursor-pointer" @click={ "value = '" + value + "'" } x-show="$el.textContent.toLowerCase().includes(search.toLowerCase())">{ value }</span>
+	Values struct {
+		Brand       string
+		Model       string
+		Year        string
+		Price       string
+		Mileage     string
+		Description string
+		Condition   string
+		Province    string
+		District    string
+		City        string
+		PhoneNos    []string
+	}
 }
 
 templ CreateListingModels(brand string, value string, models []string) {
-	@selectWithDropDown("Model", value, "model", templ.Attributes{"id": "models", "hx-get": "/user/listings/create/years", "hx-trigger": "select", "hx-target": "#years", "hx-swap": "outerHTML", "hx-vals": "js:{brand:document.getElementById('brands').dataset.value,model:event.detail.value}", "data-disabled": brand == ""}) {
+	@components.Select(&components.SelectProps{
+		DisplayName: "Model",
+		InputName:   "model",
+		Searchable:  true,
+		Attrs:       templ.Attributes{"id": "models", "hx-get": "/me/listings/create/years", "hx-trigger": "change", "hx-target": "#years", "hx-swap": "outerHTML", "hx-vals": "js:{brand:document.getElementById('brands').dataset.value, model:event.target.dataset.value}", "data-disabled": brand == ""},
+	}) {
 		if brand != "" {
 			for _, model := range models {
-				@selectWithDropDownOption(model)
+				@components.SelectOption(&components.SelectOptionProps{Value: model, Selected: model == value})
 			}
 		}
 	}
 }
 
 templ CreateListingYears(brand string, model string, value string, years []string) {
-	@selectWithDropDown("Year", value, "year", templ.Attributes{"id": "years", "data-disabled": brand == "" || model == ""}) {
+	@components.Select(&components.SelectProps{
+		DisplayName: "Year",
+		InputName:   "year",
+		Searchable:  true,
+		Attrs:       templ.Attributes{"id": "years", "data-disabled": brand == "" || model == ""},
+	}) {
 		if brand != "" && model != "" {
 			for _, year := range years {
-				@selectWithDropDownOption(year)
+				@components.SelectOption(&components.SelectOptionProps{Value: year, Selected: year == value})
 			}
 		}
 	}
 }
 
 templ CreateListingDistricts(province string, value string, districts []string) {
-	@selectWithDropDown("District", value, "district", templ.Attributes{"id": "districts", "hx-get": "/user/listings/create/cities", "hx-trigger": "select", "hx-target": "#cities", "hx-swap": "outerHTML", "hx-vals": "js:{province:document.getElementById('provinces').dataset.value,district:event.detail.value}", "data-disabled": province == ""}) {
+	@components.Select(&components.SelectProps{
+		DisplayName: "District",
+		InputName:   "district",
+		Searchable:  true,
+		Attrs:       templ.Attributes{"id": "districts", "hx-get": "/me/listings/create/cities", "hx-trigger": "change", "hx-target": "#cities", "hx-swap": "outerHTML", "hx-vals": "js:{province:document.getElementById('provinces').dataset.value, district:event.target.dataset.value}", "data-disabled": province == ""},
+	}) {
 		for _, district := range districts {
-			@selectWithDropDownOption(district)
+			@components.SelectOption(&components.SelectOptionProps{Value: district, Selected: district == value})
 		}
 	}
 }
 
 templ CreateListingCities(province string, district string, value string, cities []string) {
-	@selectWithDropDown("City", value, "city", templ.Attributes{"id": "cities", "data-disabled": province == "" || district == ""}) {
+	@components.Select(&components.SelectProps{
+		DisplayName: "City",
+		InputName:   "city",
+		Searchable:  true,
+		Attrs:       templ.Attributes{"id": "cities", "data-disabled": province == "" || district == ""},
+	}) {
 		for _, city := range cities {
-			@selectWithDropDownOption(city)
+			@components.SelectOption(&components.SelectOptionProps{Value: city, Selected: city == value})
 		}
 	}
 }
 
-type CreateListingProps struct {
-	Brands    []string
-	Provinces []string
-
-	Errors struct {
-		Model    string
-		Price    string
-		Phone    string
-		Location string
-		Images   string
-	}
-
-	Values struct {
-		Brand    string
-		Model    string
-		Year     string
-		Price    string
-		Province string
-		District string
-		City     string
-		Phone    string
-	}
-}
-
-templ CreateListingForm(p *CreateListingProps) {
-	<form class="grow mt-8 border-t py-8 flex flex-col items-start" hx-post="/user/listings/create" hx-encoding="multipart/form-data" hx-trigger="submit" hx-swap="outerHTML">
+templ CreateListingForm(brands []string, provinces []string, p *CreateListingFormProps) {
+	<form class="grow mt-8 border-t py-8 flex flex-col items-start" hx-post="/me/listings/create" hx-encoding="multipart/form-data" hx-trigger="submit" hx-swap="outerHTML">
 		<span class="text-l mb-4">Model <span class="text-red-500">*</span></span>
 		<div class="flex gap-2">
-			@selectWithDropDown("Brand", p.Values.Brand, "brand", templ.Attributes{"id": "brands", "hx-get": "/user/listings/create/models", "hx-trigger": "select", "hx-target": "#models", "hx-swap": "outerHTML", "hx-vals": "js:{brand:event.detail.value}"}) {
-				for _, brand := range p.Brands {
-					@selectWithDropDownOption(brand)
+			@components.Select(&components.SelectProps{
+				DisplayName: "Brand",
+				InputName:   "brand",
+				Searchable:  true,
+				Attrs:       templ.Attributes{"id": "brands", "hx-get": "/me/listings/create/models", "hx-trigger": "change", "hx-target": "#models", "hx-swap": "outerHTML", "hx-vals": "js:{brand:event.target.dataset.value}"},
+			}) {
+				for _, brand := range brands {
+					@components.SelectOption(&components.SelectOptionProps{Value: brand, Selected: p.Values.Brand == brand})
 				}
 			}
 			@CreateListingModels(p.Values.Brand, p.Values.Model, []string{})
@@ -107,11 +112,26 @@ templ CreateListingForm(p *CreateListingProps) {
 		if p.Errors.Price != "" {
 			<span class="text-sm text-red-500">{ p.Errors.Price }</span>
 		}
+		<span class="text-l my-4">Mileage <span class="text-red-500">*</span></span>
+		<input class="outline-none border rounded focus:border-indigo-700 p-2" type="number" name="mileage" placeholder="Km" min="0" value={ p.Values.Mileage } required/>
+		if p.Errors.Mileage != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Mileage }</span>
+		}
+		<span class="text-l my-4">Description <span class="text-red-500">*</span></span>
+		<textarea class="outline-none border rounded focus:border-indigo-700 p-2 w-[50%] h-48 resize-none" name="description" required>{ p.Values.Description }</textarea>
+		if p.Errors.Description != "" {
+			<span class="text-sm text-red-500">{ p.Errors.Description }</span>
+		}
 		<span class="text-l my-4">Location <span class="text-red-500">*</span></span>
 		<div class="flex gap-2">
-			@selectWithDropDown("Province", p.Values.Province, "province", templ.Attributes{"id": "provinces", "hx-get": "/user/listings/create/districts", "hx-trigger": "select", "hx-target": "#districts", "hx-swap": "outerHTML", "hx-vals": "js:{province:event.detail.value}"}) {
-				for _, province := range p.Provinces {
-					@selectWithDropDownOption(province)
+			@components.Select(&components.SelectProps{
+				DisplayName: "Province",
+				InputName:   "province",
+				Searchable:  true,
+				Attrs:       templ.Attributes{"id": "provinces", "hx-get": "/me/listings/create/districts", "hx-trigger": "change", "hx-target": "#districts", "hx-swap": "outerHTML", "hx-vals": "js:{province:event.target.dataset.value}"},
+			}) {
+				for _, province := range provinces {
+					@components.SelectOption(&components.SelectOptionProps{Value: province, Selected: p.Values.Province == province})
 				}
 			}
 			@CreateListingDistricts(p.Values.Province, p.Values.District, []string{})
@@ -120,10 +140,21 @@ templ CreateListingForm(p *CreateListingProps) {
 		if p.Errors.Location != "" {
 			<span class="text-sm text-red-500">{ p.Errors.Location }</span>
 		}
-		<span class="text-l my-4">Phone No. <span class="text-red-500">*</span></span>
-		<input class="outline-none border rounded focus:border-indigo-700 p-2" type="text" name="phone" placeholder="+94" value={ p.Values.Phone } maxlength="10" @input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1')" required/>
-		if p.Errors.Phone != "" {
-			<span class="text-sm text-red-500">{ p.Errors.Phone }</span>
+		<span class="text-l my-4">Phone Nos <span class="text-red-500">*</span></span>
+		<div class="flex flex-col items-start gap-1" x-data={ "{ nos: '" + strings.Join(p.Values.PhoneNos, ",") + "'.split(',') }" }>
+			<input type="hidden" name="phone_nos" x-model="nos.join(',')"/>
+			<template x-for="(no, index) in nos">
+				<input class="outline-none border rounded focus:border-indigo-700 p-2" type="text" inputmode="tel" placeholder="+94" :value="no" maxlength="10" @input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1'); nos[index] = $el.value" required/>
+			</template>
+			<button class="text-indigo-700" @click.prevent="nos.push('')">Add phone no.</button>
+		</div>
+		if p.Errors.PhoneNos != "" {
+			<span class="text-sm text-red-500">{ p.Errors.PhoneNos }</span>
+		}
+		<span class="text-l my-4">Condition <span class="text-red-500">*</span></span>
+		@components.Select(&components.SelectProps{DisplayName: "Condition", InputName: "condition", Attrs: templ.Attributes{}}) {
+			@components.SelectOption(&components.SelectOptionProps{Value: "New", Selected: p.Values.Condition == "New" || p.Values.Condition == ""})
+			@components.SelectOption(&components.SelectOptionProps{Value: "Used", Selected: p.Values.Condition == "Used"})
 		}
 		<span class="text-l mt-4">Images <span class="text-red-500">*</span></span>
 		<span class="text-sm text-neutral-500 mb-4">Atleast 03 images</span>
@@ -131,12 +162,12 @@ templ CreateListingForm(p *CreateListingProps) {
 			<input type="file" name="images" x-effect="dt = new DataTransfer(); files.forEach(f => dt.items.add(f)); $el.files = dt.files" hidden/>
 			<template x-for="(file, index) in files">
 				<div class="size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
-					<input type="file" accept="image/*" @change="files[index] = $el.files[0]" hidden/>
+					<input type="file" accept="image/png,image/jpeg" @change="files[index] = $el.files[0]" hidden/>
 					<img x-effect="r = new FileReader();r.onload=(e) => {$el.src = e.target.result};r.readAsDataURL(file)"/>
 				</div>
 			</template>
 			<div class="size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
-				<input type="file" accept="image/*" @change="$el.files[0].size > 1024 * 1024 * 3 ? open = true : files.push($el.files[0])" hidden/>
+				<input type="file" accept="image/png,image/jpeg" @change="$el.files[0].size > 1024 * 1024 * 3 ? open = true : files.push($el.files[0])" hidden/>
 				<svg class="size-full fill-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M11.75 4.5a.75.75 0 0 1 .75.75V11h5.75a.75.75 0 0 1 0 1.5H12.5v5.75a.75.75 0 0 1-1.5 0V12.5H5.25a.75.75 0 0 1 0-1.5H11V5.25a.75.75 0 0 1 .75-.75Z"></path></svg>
 				<span class="text-neutral-400 font-bold">Upload (max. 3mb)</span>
 			</div>
@@ -149,13 +180,13 @@ templ CreateListingForm(p *CreateListingProps) {
 	</form>
 }
 
-templ CreateListing(p *CreateListingProps) {
+templ CreateListing(brands []string, provinces []string) {
 	@shared.Page() {
 		<div class="py-8 w-[60vw] mx-auto h-full" x-data="{ open: false, files: [] }">
 			<div class="flex justify-between items-center">
 				<span class="text-2xl font-bold">Create Listing</span>
 			</div>
-			@CreateListingForm(p)
+			@CreateListingForm(brands, provinces, &CreateListingFormProps{})
 			<div x-show="open" class="w-screen h-screen fixed top-0 left-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center" x-cloak>
 				<div class="p-4 bg-white rounded inline-flex gap-2" @click.outside="open = false">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M13 17.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.25-8.25a.75.75 0 0 0-1.5 0v4.5a.75.75 0 0 0 1.5 0v-4.5Z"></path><path d="M9.836 3.244c.963-1.665 3.365-1.665 4.328 0l8.967 15.504c.963 1.667-.24 3.752-2.165 3.752H3.034c-1.926 0-3.128-2.085-2.165-3.752Zm3.03.751a1.002 1.002 0 0 0-1.732 0L2.168 19.499A1.002 1.002 0 0 0 3.034 21h17.932a1.002 1.002 0 0 0 .866-1.5L12.866 3.994Z"></path></svg>

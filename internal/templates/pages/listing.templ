@@ -3,37 +3,54 @@ package pages
 import "github.com/sakithb/hcblk-server/internal/models"
 import "github.com/sakithb/hcblk-server/internal/templates/shared"
 import "strconv"
+import "strings"
 import "github.com/sakithb/hcblk-server/internal/utils"
 
 templ Listing(l *models.Listing) {
 	@shared.Page() {
-		<div class="py-8 w-[60vw] mx-auto h-full" x-data="{ open: false, files: [] }">
-			<div class="flex justify-between items-center">
-				<span class="text-2xl font-bold">Your Listing</span>
-				<a class="p-2 bg-indigo-700 text-white rounded inline-flex items-center gap-2" href={ templ.SafeURL("/user/listing/" + l.Id + "/edit") }>
-					<svg class="fill-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"></path></svg>
-					<span>Edit</span>
-				</a>
-			</div>
-			<div class="grow mt-8 border-t py-8 flex">
-				<div class="w-1/2 flex flex-col">
-					<span class="text-xl text-neutral-400">{ l.Model.Brand }</span>
-					<span class="text-3xl font-bold">{ l.Model.Model }</span>
-					<span class="text-xl text-neutral-400">{ strconv.Itoa(l.Model.Year) }</span>
-					<span class="text-xl">Rs. { utils.FormatInteger(l.Price) }</span>
-				</div>
-				<div class="relative w-1/2 aspect-square" x-data={ "{ active: 0, len: " + strconv.Itoa(len(l.Images)) + " }" }>
-					<div class="size-full">
+		<div class="py-8 w-[60vw] mx-auto h-full">
+			<div class="flex gap-4">
+				<div class="flex flex-col gap-2 w-[50%]" x-data={ "{ activeIdx: 0, srcs: ['" + strings.Join(l.Images, "','") + "']}" }>
+					<div class="relative aspect-square">
+						<img class="rounded bg-neutral-100 shadow object-contain size-full" :src={ "'/assets/listings/" + l.Id + "/' + srcs[activeIdx]" } alt=""/>
+						<button class="absolute left-2 top-1/2 -translate-y-1/2 size-10 bg-white rounded-full p-1" @click="activeIdx = Math.max(0, activeIdx - 1)">
+							<svg viewBox="-2.4 -2.4 28.80 28.80" xmlns="http://www.w3.org/2000/svg" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m14 7-5 5 5 5"></path></g></svg>
+						</button>
+						<button class="absolute right-2 top-1/2 -translate-y-1/2 size-10 bg-white rounded-full p-1" @click="activeIdx = Math.min(srcs.length - 1, activeIdx + 1)">
+							<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 7 5 5-5 5"></path></g></svg>
+						</button>
+					</div>
+					<div class="flex gap-2">
 						for i, img := range l.Images {
-							<img class="size-full object-contain" src={ "/assets/listings/" + l.Id + "/" + img } x-show={ "active == " + strconv.Itoa(i) } x-cloak/>
+							<img
+								class="rounded bg-neutral-100 aspect-square object-cover w-1/5 cursor-pointer border-2 border-white data-[active=true]:border-indigo-700"
+								src={ "/assets/listings/" + l.Id + "/" + img }
+								alt=""
+								@click={ "activeIdx = " + strconv.Itoa(i) }
+								:data-active={ "activeIdx == " + strconv.Itoa(i) }
+							/>
 						}
 					</div>
-					<button class="absolute top-1/2 -left-6 -translate-y-1/2 size-16 cursor-pointer" @click="active = active == 0 ? len - 1 : active - 1">
-						<svg class="w-full h-full fill-neutral-600/60 hover:fill-neutral-600/100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m8.854 11.646 5.792-5.792a.5.5 0 0 1 .854.353v11.586a.5.5 0 0 1-.854.353l-5.792-5.792a.5.5 0 0 1 0-.708Z"></path></svg>
-					</button>
-					<button class="absolute top-1/2 -right-6 -translate-y-1/2 size-16 cursor-pointer" @click="active = active == len - 1 ? 0 : active + 1">
-						<svg class="w-full h-full fill-neutral-600/60 hover:fill-neutral-600/100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m15.146 12.354-5.792 5.792a.5.5 0 0 1-.854-.353V6.207a.5.5 0 0 1 .854-.353l5.792 5.792a.5.5 0 0 1 0 .708Z"></path></svg>
-					</button>
+				</div>
+				<div class="flex flex-col grow">
+					<span class="text-xl text-neutral-400">{ l.Bike.Brand }</span>
+					<span class="text-2xl font-bold">{ l.Bike.Model }</span>
+					<span class="text-xl text-neutral-400">{ strconv.Itoa(l.Bike.Year) }</span>
+					<span class="text-neutral-500 mt-4">Listed on <b>{ l.ListedAt.Format("Jan 02 2006") }</b> by <b>{l.Seller.FirstName} {l.Seller.LastName}</b></span>
+					<span class="text-neutral-500">Located in <b>{ l.City.City } - { l.City.District }</b></span>
+					<div class="flex flex-col justify-end my-4">
+						for _, no := range l.PhoneNos {
+							<span class="hover:underline cursor-pointer" x-data="{ copied: false }" @click={"navigator.clipboard.writeText('" + no +"').then(() => (copied = true,setTimeout(() => (copied = false), 1000)))"}>
+								<svg class="inline w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M16.5562 12.9062L16.1007 13.359C16.1007 13.359 15.0181 14.4355 12.0631 11.4972C9.10812 8.55901 10.1907 7.48257 10.1907 7.48257L10.4775 7.19738C11.1841 6.49484 11.2507 5.36691 10.6342 4.54348L9.37326 2.85908C8.61028 1.83992 7.13596 1.70529 6.26145 2.57483L4.69185 4.13552C4.25823 4.56668 3.96765 5.12559 4.00289 5.74561C4.09304 7.33182 4.81071 10.7447 8.81536 14.7266C13.0621 18.9492 17.0468 19.117 18.6763 18.9651C19.1917 18.9171 19.6399 18.6546 20.0011 18.2954L21.4217 16.883C22.3806 15.9295 22.1102 14.2949 20.8833 13.628L18.9728 12.5894C18.1672 12.1515 17.1858 12.2801 16.5562 12.9062Z" fill="#1C274C"></path> </g></svg>
+								<span x-text={"copied ? 'Copied' : '" + utils.FormatPhoneNo(no) + "'"}>{ utils.FormatPhoneNo(no) }</span>
+							</span>
+						}
+					</div>
+					<span class="text-l text-neutral-500">Condition: <b>{ utils.GetConditionString(l.Used) }</b></span>
+					<span class="text-l text-neutral-500">Mileage: <b>{ utils.FormatInteger(l.Mileage) }km</b></span>
+					<span class="text-l text-neutral-500">Category: <b>{ l.Bike.Category }</b></span>
+					<span class="text-l text-neutral-500">Engine capacity: <b>{ strconv.Itoa(l.Bike.EngineCapacity) }cc</b></span>
+					<span class="text-2xl font-bold italic mt-4">Rs { utils.FormatInteger(l.Price) }</span>
 				</div>
 			</div>
 		</div>

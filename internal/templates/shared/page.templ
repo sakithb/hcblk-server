@@ -5,7 +5,7 @@ import "github.com/sakithb/hcblk-server/internal/templates/components"
 templ Page() {
 	@Base() {
 		@components.Header()
-		<main class="grow">{children...}</main>
+		<main class="flex flex-col flex-1">{children...}</main>
 		@components.Footer()
 	}
 }

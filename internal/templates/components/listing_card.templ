@@ -1,0 +1,23 @@
+package components
+
+import "github.com/sakithb/hcblk-server/internal/models"
+import "strconv"
+import "github.com/sakithb/hcblk-server/internal/utils"
+
+templ ListingCard(l *models.Listing) {
+	<div class="flex h-48 gap-4 border rounded overflow-hidden">
+		<img class="h-full aspect-square object-cover bg-neutral-100" src={"/assets/listings/" + l.Id + "/" + l.Images[0]} alt="">
+		<div class="flex flex-col grow p-4">
+			<a class="text-xl hover:underline" href={templ.SafeURL("/listing/" + l.Id)}>{l.Bike.Brand} {l.Bike.Model} {strconv.Itoa(l.Bike.Year)}</a>
+			<span class="text-sm text-neutral-400">{l.Bike.Category}</span>
+			<span class="text-md text-neutral-500">{utils.GetConditionString(l.Used)}</span>
+			<span class="grow"></span>
+			<span class="text-2xl font-medium italic">Rs {utils.FormatInteger(l.Price)}</span>
+			<span class="text-neutral-500">{utils.FormatInteger(l.Mileage)}km</span>
+		</div>
+		<div class="flex flex-col justify-end items-end p-4">
+			<span class="text-sm text-neutral-400">{l.City.City} - {l.City.District}</span>
+			<span class="text-sm text-neutral-400">{l.ListedAt.Format("Jan 02 2006")}</span>
+		</div>
+	</div>
+}

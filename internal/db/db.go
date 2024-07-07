@@ -26,7 +26,7 @@ const (
 		listings(
 			id    	    VARCHAR(36) NOT NULL,
 			seller_id   VARCHAR(36) NOT NULL,
-			model_slug  VARCHAR(255) NOT NULL,
+			bike_id  VARCHAR(255) NOT NULL,
 			description TEXT NOT NULL,
 			price 	    INT NOT NULL,
 			mileage     INT NOT NULL,
@@ -36,7 +36,7 @@ const (
 			listed_at   DATETIME NOT NULL DEFAULT(unixepoch()),
 			PRIMARY KEY(id),
 			FOREIGN KEY(seller_id) REFERENCES users(id),
-			FOREIGN KEY(model_slug) REFERENCES models(slug),
+			FOREIGN KEY(bike_id) REFERENCES bikes(id),
 			FOREIGN KEY(city_id) REFERENCES cities(id)
 		)
 	`
