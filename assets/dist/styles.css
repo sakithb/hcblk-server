@@ -1197,6 +1197,24 @@ video {
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 
+@media (min-width: 768px) {
+  .md\:static {
+    position: static;
+  }
+
+  .md\:inline-flex {
+    display: inline-flex;
+  }
+
+  .md\:hidden {
+    display: none;
+  }
+
+  .md\:justify-normal {
+    justify-content: normal;
+  }
+}
+
 .\[\&\:has\(\+_\:focus\)\]\:text-indigo-700:has(+ :focus) {
   --tw-text-opacity: 1;
   color: rgb(67 56 202 / var(--tw-text-opacity));
