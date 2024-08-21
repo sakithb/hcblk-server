@@ -9,6 +9,8 @@ data:
 	@sqlite3 assets/data.db ".import assets/cities.csv cities --csv --skip 1" 
 
 build:
+	@tailwindcss -i assets/tailwind.css -o assets/dist/styles.css
+	@TEMPL_EXPERIMENT=rawgo templ generate
 	@go build -o ./builds/main ./cmd/main.go
 
 dev:
