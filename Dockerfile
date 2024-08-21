@@ -1,11 +1,12 @@
 FROM golang:1.22
 
-WORKDIR "/app"
-COPY ./ ./
-
 RUN apt update -y && apt install -y sqlite3 nodejs npm
 RUN npm install -g tailwindcss
 RUN go install github.com/a-h/templ/cmd/templ@latest
+
+WORKDIR "/app"
+COPY ./ ./
+
 RUN go mod download
 RUN go mod verify
 RUN make build
