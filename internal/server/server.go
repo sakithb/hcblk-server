@@ -10,8 +10,15 @@ import (
 )
 
 func StartServer(h http.Handler) {
+	port, ok := os.LookupEnv("PORT")
+	if ok {
+		port = ":" + port
+	} else {
+		port = ":8080"
+	}
+
 	s := http.Server{
-		Addr: ":8080",
+		Addr: port,
 		Handler: h,
 	}
 

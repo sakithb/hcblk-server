@@ -1,2 +1,4 @@
 builds
+assets/dist/listings
+assets/data.db
 views/*_templ.go

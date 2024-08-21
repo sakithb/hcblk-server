@@ -88,9 +88,9 @@ templ CreateListingCities(province string, district string, value string, cities
 }
 
 templ CreateListingForm(brands []string, provinces []string, p *CreateListingFormProps) {
-	<form class="grow mt-8 border-t py-8 flex flex-col items-start" hx-post="/me/listings/create" hx-encoding="multipart/form-data" hx-trigger="submit" hx-swap="outerHTML">
+	<form class="grow mt-4 md:mt-8 border-t py-4 md:py-8 flex flex-col md:items-start" hx-post="/me/listings/create" hx-encoding="multipart/form-data" hx-trigger="submit" hx-swap="outerHTML">
 		<span class="text-l mb-4">Model <span class="text-red-500">*</span></span>
-		<div class="flex gap-2">
+		<div class="flex flex-col w-full md:w-auto md:flex-row gap-2">
 			@components.Select(&components.SelectProps{
 				DisplayName: "Brand",
 				InputName:   "brand",
@@ -118,12 +118,12 @@ templ CreateListingForm(brands []string, provinces []string, p *CreateListingFor
 			<span class="text-sm text-red-500">{ p.Errors.Mileage }</span>
 		}
 		<span class="text-l my-4">Description <span class="text-red-500">*</span></span>
-		<textarea class="outline-none border rounded focus:border-indigo-700 p-2 w-[50%] h-48 resize-none" name="description" required>{ p.Values.Description }</textarea>
+		<textarea class="outline-none border rounded focus:border-indigo-700 p-2 md:w-[50%] h-48 resize-none" name="description" required>{ p.Values.Description }</textarea>
 		if p.Errors.Description != "" {
 			<span class="text-sm text-red-500">{ p.Errors.Description }</span>
 		}
 		<span class="text-l my-4">Location <span class="text-red-500">*</span></span>
-		<div class="flex gap-2">
+		<div class="flex flex-col w-full md:w-auto md:flex-row gap-2">
 			@components.Select(&components.SelectProps{
 				DisplayName: "Province",
 				InputName:   "province",
@@ -141,7 +141,7 @@ templ CreateListingForm(brands []string, provinces []string, p *CreateListingFor
 			<span class="text-sm text-red-500">{ p.Errors.Location }</span>
 		}
 		<span class="text-l my-4">Phone Nos <span class="text-red-500">*</span></span>
-		<div class="flex flex-col items-start gap-1" x-data={ "{ nos: '" + strings.Join(p.Values.PhoneNos, ",") + "'.split(',') }" }>
+		<div class="flex flex-col md:items-start gap-1" x-data={ "{ nos: '" + strings.Join(p.Values.PhoneNos, ",") + "'.split(',') }" }>
 			<input type="hidden" name="phone_nos" x-model="nos.join(',')"/>
 			<template x-for="(no, index) in nos">
 				<input class="outline-none border rounded focus:border-indigo-700 p-2" type="text" inputmode="tel" placeholder="+94" :value="no" maxlength="10" @input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1'); nos[index] = $el.value" required/>
@@ -158,17 +158,17 @@ templ CreateListingForm(brands []string, provinces []string, p *CreateListingFor
 		}
 		<span class="text-l mt-4">Images <span class="text-red-500">*</span></span>
 		<span class="text-sm text-neutral-500 mb-4">Atleast 03 images</span>
-		<div id="files" class="grid grid-cols-[repeat(auto-fill,12rem)] gap-2 w-full" hx-preserve="true">
+		<div id="files" class="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,12rem)] gap-2 w-full" hx-preserve="true">
 			<input type="file" name="images" x-effect="dt = new DataTransfer(); files.forEach(f => dt.items.add(f)); $el.files = dt.files" hidden/>
 			<template x-for="(file, index) in files">
-				<div class="size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
+				<div class="md:size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
 					<input type="file" accept="image/png,image/jpeg" @change="files[index] = $el.files[0]" hidden/>
 					<img x-effect="r = new FileReader();r.onload=(e) => {$el.src = e.target.result};r.readAsDataURL(file)"/>
 				</div>
 			</template>
-			<div class="size-48 rounded border flex flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
+			<div class="md:size-48 rounded border flex md:flex-col items-center p-4 cursor-pointer" @click="$el.children[0].click()">
 				<input type="file" accept="image/png,image/jpeg" @change="$el.files[0].size > 1024 * 1024 * 3 ? open = true : files.push($el.files[0])" hidden/>
-				<svg class="size-full fill-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M11.75 4.5a.75.75 0 0 1 .75.75V11h5.75a.75.75 0 0 1 0 1.5H12.5v5.75a.75.75 0 0 1-1.5 0V12.5H5.25a.75.75 0 0 1 0-1.5H11V5.25a.75.75 0 0 1 .75-.75Z"></path></svg>
+				<svg class="md:size-full fill-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M11.75 4.5a.75.75 0 0 1 .75.75V11h5.75a.75.75 0 0 1 0 1.5H12.5v5.75a.75.75 0 0 1-1.5 0V12.5H5.25a.75.75 0 0 1 0-1.5H11V5.25a.75.75 0 0 1 .75-.75Z"></path></svg>
 				<span class="text-neutral-400 font-bold">Upload (max. 3mb)</span>
 			</div>
 		</div>
@@ -182,9 +182,9 @@ templ CreateListingForm(brands []string, provinces []string, p *CreateListingFor
 
 templ CreateListing(brands []string, provinces []string) {
 	@shared.Page() {
-		<div class="py-8 w-[60vw] mx-auto h-full" x-data="{ open: false, files: [] }">
+		<div class="py-4 md:py-8 px-2 md:px-0 md:w-[60vw] md:mx-auto h-full" x-data="{ open: false, files: [] }">
 			<div class="flex justify-between items-center">
-				<span class="text-2xl font-bold">Create Listing</span>
+				<span class="text-l md:text-2xl font-bold">Create Listing</span>
 			</div>
 			@CreateListingForm(brands, provinces, &CreateListingFormProps{})
 			<div x-show="open" class="w-screen h-screen fixed top-0 left-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center" x-cloak>

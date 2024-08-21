@@ -23,7 +23,7 @@ type SignupProps struct {
 }
 
 templ SignupForm(props *SignupProps) {
-	<form class="flex flex-col gap-3 p-4 w-[25vw] shadow-md rounded border border-neutral-100 bg-white" hx-post="/auth/signup" hx-trigger="submit" hx-swap="outerHTML">
+	<form class="flex flex-col gap-3 p-4 md:w-[25vw] md:shadow-md rounded md:border border-neutral-100 bg-white self-stretch md:self-center" hx-post="/auth/signup" hx-trigger="submit" hx-swap="outerHTML">
 		if props.Emailed {
 			<span class="p-4 bg-emerald-100 text-emerald-700">A verification email has been sent to the email address provided.</span>
 		} else if props.Emailed {
@@ -71,7 +71,7 @@ templ SignupForm(props *SignupProps) {
 
 templ Signup(props *SignupProps) {
 	@shared.Base() {
-		<main class="flex flex-col items-center justify-center gap-4 h-screen bg-neutral-100">
+		<main class="flex flex-col items-center justify-center gap-4 h-screen md:bg-neutral-100">
 			@components.Logo()
 			@SignupForm(props)
 		</main>

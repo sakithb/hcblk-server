@@ -1,13 +1,19 @@
 package main
 
 import (
+	"io"
 	"log"
+	"log/slog"
+	"os"
+	"path"
+	"strconv"
 	"time"
 
 	"github.com/alexedwards/scs/sqlite3store"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httplog/v2"
 	"github.com/sakithb/hcblk-server/internal/db"
 	"github.com/sakithb/hcblk-server/internal/middleware"
 	"github.com/sakithb/hcblk-server/internal/routes"
@@ -23,9 +29,52 @@ func main() {
 	sm.IdleTimeout = time.Hour * 24 * 7
 	sm.Store = sqlite3store.New(db.DB)
 
+	dev, _ := os.LookupEnv("DEV_MODE")
+	isDev := dev == "1"
+
+	var loglevel slog.Level
+	var out io.Writer
+
+	if isDev {
+		loglevel = slog.LevelDebug
+		out = os.Stdout
+	} else {
+		err := os.MkdirAll("/var/log/tikslide/", os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fname := strconv.Itoa(int(time.Now().Unix()))
+
+		access, err := os.Create(path.Join("/var/log/tikslide/", fname+"-access.log"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		std, err := os.Create(path.Join("/var/log/tikslide/", fname+".log"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		loglevel = slog.LevelInfo
+		out = access
+		log.SetOutput(std)
+	}
+
+	logger := httplog.NewLogger("server", httplog.Options{
+		LogLevel:        loglevel,
+		Concise:         !isDev,
+		RequestHeaders:  true,
+		ResponseHeaders: true,
+		JSON:            !isDev,
+		Writer:          out,
+	})
+
 	h := chi.NewRouter()
 
-	h.Use(middleware.Logger)
+	h.Use(middleware.RealIP)
+	h.Use(middleware.Heartbeat("/ping"))
+	h.Use(httplog.RequestLogger(logger))
 	h.Use(middleware.Recoverer)
 	h.Use(middleware.StripSlashes)
 	h.Use(sm.LoadAndSave)

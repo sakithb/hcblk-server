@@ -13,7 +13,7 @@ type LoginProps struct {
 }
 
 templ LoginForm(props *LoginProps) {
-	<form class="flex flex-col gap-3 p-4 w-[25vw] shadow-md rounded border border-neutral-100 bg-white" hx-post="/auth/login" hx-trigger="submit" hx-swap="outerHTML">
+	<form class="flex flex-col gap-3 p-4 md:w-[25vw] md:shadow-md rounded md:border border-neutral-100 bg-white self-stretch md:self-center" hx-post="/auth/login" hx-trigger="submit" hx-swap="outerHTML">
 		if props.Invalid {
 			<span class="p-4 bg-red-100 text-red-700">Email or password is incorrect</span>
 		} else if props.ServerError {
@@ -43,7 +43,7 @@ templ LoginForm(props *LoginProps) {
 
 templ Login(props *LoginProps) {
 	@shared.Base() {
-		<main class="flex flex-col items-center justify-center gap-4 h-screen bg-neutral-100">
+		<main class="flex flex-col items-center justify-center gap-4 h-screen bg-white md:bg-neutral-100">
 			@components.Logo()
 			@LoginForm(props)
 		</main>

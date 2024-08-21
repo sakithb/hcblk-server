@@ -55,7 +55,7 @@ type IndexResultsProps struct {
 templ IndexResults(props *IndexResultsProps) {
 	<div id="results" class="flex flex-col gap-4 grow">
 		if len(props.Listings) == 0 {
-			<span class="text-2xl text-neutral-400 font-bold self-center">You haven't created any listings yet</span>
+			<span class="text-l md:text-2xl text-neutral-400 font-bold self-center">No listings found</span>
 		} else {
 			for _, l := range props.Listings {
 				@components.ListingCard(l)
@@ -150,8 +150,8 @@ templ IndexResults(props *IndexResultsProps) {
 
 templ Index(props *IndexProps) {
 	@shared.Page() {
-		<div class="flex py-8 w-[60vw] grow self-center gap-4">
-			<div class="flex flex-col w-56 gap-4">
+		<div class="flex py-8 md:w-[60vw] grow px-2 md:self-center md:px-0 gap-4 flex-col md:flex-row [--mobile:1] md:[--mobile:0]" x-data="{ expanded: !(getComputedStyle($el).getPropertyValue('--mobile') === '1') }">
+			<div class="flex flex-col w-full md:w-56 gap-4 border-b pb-4 md:border-b-none md:pb-0" x-show="expanded" x-transition x-cloak>
 				<div class="flex flex-col gap-2 pb-4 border-b">
 					<span>Sort by</span>
 					<div class="flex flex-col gap-2">
@@ -369,6 +369,7 @@ templ Index(props *IndexProps) {
 					</div>
 				</div>
 			</div>
+			<button class="md:hidden bg-indigo-700 w-full text-white px-2 py-1 rounded" @click="expanded = !expanded" x-text="expanded ? 'Collapse filters' : 'Expand filters'">Expand filters</button>
 			@IndexResults(&IndexResultsProps{Listings: props.Listings})
 		</div>
 	}

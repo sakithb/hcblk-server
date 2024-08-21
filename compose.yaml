@@ -1,0 +1,14 @@
+name: hcblk
+
+services:
+  server:
+    tty: true
+    build:
+      context: .
+      args:
+        PORT: 8080
+    ports:
+      - 8080:8080
+    volumes:
+      - /var/log/hcblk/:/var/log/hcblk/:rw
+
