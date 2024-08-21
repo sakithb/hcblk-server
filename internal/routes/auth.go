@@ -2,8 +2,10 @@ package routes
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
+	"net/smtp"
 	"net/url"
 
 	"github.com/alexedwards/scs/v2"
@@ -17,6 +19,7 @@ type AuthHandler struct {
 	Sessions    *scs.SessionManager
 	AuthService *services.AuthService
 	UserService *services.UserService
+	SMTPAuth    smtp.Auth
 }
 
 func NewAuthHandler(as *services.AuthService, us *services.UserService, sm *scs.SessionManager) *AuthHandler {
@@ -24,6 +27,7 @@ func NewAuthHandler(as *services.AuthService, us *services.UserService, sm *scs.
 		Sessions:    sm,
 		AuthService: as,
 		UserService: us,
+		SMTPAuth:    smtp.PlainAuth("", "postmaster@hcblk.live", "dda83504bd78534fe107e08f59867b63-2b91eb47-4e042e39", "smtp.eu.mailgun.org"),
 	}
 }
 
@@ -163,8 +167,27 @@ func (h *AuthHandler) PostSignup(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			props.ServerError = true
 		} else {
-			log.Println("http://localhost:3000/auth/verify?t=" + url.QueryEscape(t))
-			props.Emailed = true
+			url := "https://hcblk.live/auth/verify?t=" + url.QueryEscape(t)
+			err = smtp.SendMail(
+				"smtp.eu.mailgun.org:587",
+				h.SMTPAuth,
+				"sakith@hcblk.live",
+				[]string{email},
+				[]byte(fmt.Sprintf(
+					"Hello %s,\r\n"+
+						"Verify your email: %s\r\n"+
+						"Thank you for using hcblk.live",
+					fname,
+					url,
+				)),
+			)
+
+			if err != nil {
+				log.Println(err)
+				props.ServerError = true
+			} else {
+				props.Emailed = true
+			}
 		}
 	}
 
