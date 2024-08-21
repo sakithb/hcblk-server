@@ -39,19 +39,19 @@ func main() {
 		loglevel = slog.LevelDebug
 		out = os.Stdout
 	} else {
-		err := os.MkdirAll("/var/log/tikslide/", os.ModePerm)
+		err := os.MkdirAll("/var/log/hcblk/", os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		fname := strconv.Itoa(int(time.Now().Unix()))
 
-		access, err := os.Create(path.Join("/var/log/tikslide/", fname+"-access.log"))
+		access, err := os.Create(path.Join("/var/log/hcblk/", fname+"-access.log"))
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		std, err := os.Create(path.Join("/var/log/tikslide/", fname+".log"))
+		std, err := os.Create(path.Join("/var/log/hcblk/", fname+".log"))
 		if err != nil {
 			log.Fatal(err)
 		}
