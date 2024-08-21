@@ -1,8 +1,6 @@
 .PHONY: dev build
 
 data:
-	@rm assets/data.db
-	@sqlite3 assets/data.db "VACUUM;"
 	@sqlite3 assets/data.db "DROP TABLE IF EXISTS bikes;" 
 	@sqlite3 assets/data.db "CREATE TABLE bikes(id TEXT, brand TEXT, model TEXT, year INT, category TEXT, engine_capacity INT, PRIMARY KEY(id));" 
 	@sqlite3 assets/data.db ".import assets/bikes.csv bikes --csv --skip 1" 
