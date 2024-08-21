@@ -174,9 +174,13 @@ func (h *AuthHandler) PostSignup(w http.ResponseWriter, r *http.Request) {
 				"sakith@hcblk.live",
 				[]string{email},
 				[]byte(fmt.Sprintf(
-					"Hello %s,\r\n"+
-						"Verify your email: %s\r\n"+
-						"Thank you for using hcblk.live",
+					"To: %s\r\n"+
+						"Subject: Activate your hcblk.live account\r\n"+
+						"\r\n"+
+						"Hello %s,\r\n"+
+						"Visit this link to verify: %s\r\n"+
+						"Thank you for using hcblk.live\r\n",
+					email,
 					fname,
 					url,
 				)),
