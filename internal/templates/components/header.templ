@@ -4,7 +4,7 @@ import "github.com/sakithb/hcblk-server/internal/models"
 import "github.com/sakithb/hcblk-server/internal/utils"
 
 templ Header() {
-	<header id="header" class="flex items-center md:justify-normal justify-center relative md:static px-4 py-3 shadow" x-data="{open: false}">
+	<header id="header" class="flex items-center md:justify-normal justify-center sticky top-0 left-0 px-4 py-3 shadow bg-white z-[999]" x-data="{open: false}">
 		@Logo()
 		if _, ok := ctx.Value("search").(bool); ok {
 			<form

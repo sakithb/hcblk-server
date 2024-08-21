@@ -78,7 +78,7 @@ func IndexResults(props *IndexResultsProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"results\" class=\"flex flex-col gap-4 grow\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"results\" class=\"flex flex-col gap-4 grow pt-4 border-t md:pt-0 md:border-t-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -305,7 +305,7 @@ func Index(props *IndexProps) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex py-8 md:w-[60vw] grow px-2 md:self-center md:px-0 gap-4 flex-col md:flex-row [--mobile:1] md:[--mobile:0]\" x-data=\"{ expanded: !(getComputedStyle($el).getPropertyValue(&#39;--mobile&#39;) === &#39;1&#39;) }\"><div class=\"flex flex-col w-full md:w-56 gap-4 border-b pb-4 md:border-b-none md:pb-0\" x-show=\"expanded\" x-transition x-cloak><div class=\"flex flex-col gap-2 pb-4 border-b\"><span>Sort by</span><div class=\"flex flex-col gap-2\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex py-4 md:py-8 md:w-[60vw] grow px-2 md:self-center md:px-0 gap-4 flex-col md:flex-row [--mobile:1] md:[--mobile:0]\" x-data=\"{ expanded: !(getComputedStyle($el).getPropertyValue(&#39;--mobile&#39;) === &#39;1&#39;) }\"><div class=\"flex flex-col w-full md:w-56 gap-4 border-b pb-4 md:border-b-none md:pb-0\" x-show=\"expanded\" x-transition x-cloak><div class=\"flex flex-col gap-2 pb-4 border-b\"><span>Sort by</span><div class=\"flex flex-col gap-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -735,7 +735,7 @@ func Index(props *IndexProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><button class=\"bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2\" hx-get=\"/\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#results\" hx-vals=\"js:{engine_capacity: (a = event.target.parentElement, (a._x_dataStack[0].min || &#39;&#39;) + &#39;,&#39; + (a._x_dataStack[0].max || &#39;&#39;))}\">Apply</button></div></div></div><button class=\"md:hidden bg-indigo-700 w-full text-white px-2 py-1 rounded\" @click=\"expanded = !expanded\" x-text=\"expanded ? &#39;Collapse filters&#39; : &#39;Expand filters&#39;\">Expand filters</button>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><button class=\"bg-indigo-700 w-full text-white px-2 py-1 rounded mt-2\" hx-get=\"/\" hx-trigger=\"click\" hx-swap=\"outerHTML\" hx-target=\"#results\" hx-vals=\"js:{engine_capacity: (a = event.target.parentElement, (a._x_dataStack[0].min || &#39;&#39;) + &#39;,&#39; + (a._x_dataStack[0].max || &#39;&#39;))}\">Apply</button></div></div></div><button class=\"md:hidden border text-indigo-700 fill-indigo-700 w-full px-2 py-1 rounded inline-flex items-center justify-center gap-1\" @click=\"expanded = !expanded\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"24\" height=\"24\"><path d=\"M2.75 6a.75.75 0 0 0 0 1.5h18.5a.75.75 0 0 0 0-1.5H2.75ZM6 11.75a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75a.75.75 0 0 1-.75-.75Zm4 4.938a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z\"></path></svg> <span x-text=\"expanded ? &#39;Collapse filters&#39; : &#39;Adjust filters&#39;\">Expand filters</span></button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

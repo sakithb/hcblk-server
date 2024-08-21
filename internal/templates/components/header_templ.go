@@ -29,7 +29,7 @@ func Header() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header id=\"header\" class=\"flex items-center md:justify-normal justify-center relative md:static px-4 py-3 shadow\" x-data=\"{open: false}\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header id=\"header\" class=\"flex items-center md:justify-normal justify-center sticky top-0 left-0 px-4 py-3 shadow bg-white z-[999]\" x-data=\"{open: false}\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
