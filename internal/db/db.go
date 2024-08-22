@@ -76,7 +76,7 @@ const (
 )
 
 func New() *sqlx.DB {
-	db, err := sqlx.Open("sqlite3", "assets/data.db")
+	db, err := sqlx.Open("sqlite3", "assets/db/data.db")
 	if err != nil {
 		log.Fatalln(err)
 	}
