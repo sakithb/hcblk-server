@@ -49,7 +49,7 @@ func (s *UserService) CreateUser(fname string, lname string, email string, hash 
 
 func (s *UserService) UserExists(email string) (bool, error) {
 	var count int
-	err := s.DB.Get(&count, "SELECT COUNT(id) FROM users WHERE email = ?", email)
+	err := s.DB.Get(&count, "SELECT COUNT(*) FROM users WHERE email = ?", email)
 
-	return count > 1, err
+	return count >= 1, err
 }

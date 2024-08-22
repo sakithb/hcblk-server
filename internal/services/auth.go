@@ -66,12 +66,12 @@ func (s *AuthService) VerifyPassword(pwd string, email string) (bool, error) {
 	return subtle.ConstantTimeCompare([]byte(b64Hash), []byte(b64StoredHash)) > 0, nil
 }
 
-func (s *AuthService) GenerateToken(u *OnboardingUser) (string, error) {
+func (s *AuthService) GenerateSignupToken(u *OnboardingUser) (string, error) {
 	bytes := utils.GenerateRandomBytes(TOKEN_LENGTH)
 	token := base64.StdEncoding.EncodeToString(bytes)
 
 	_, err := s.DB.Exec(
-		"INSERT INTO tokens VALUES(?, ?, ?, ?, ?)",
+		"INSERT INTO signup_tokens VALUES(?, ?, ?, ?, ?)",
 		token,
 		u.FirstName,
 		u.LastName,
@@ -82,15 +82,40 @@ func (s *AuthService) GenerateToken(u *OnboardingUser) (string, error) {
 	return token, err
 }
 
-func (s *AuthService) VerifyToken(token string) (*OnboardingUser, error) {
+func (s *AuthService) GenerateResetToken(email string) (string, error) {
+	bytes := utils.GenerateRandomBytes(TOKEN_LENGTH)
+	token := base64.StdEncoding.EncodeToString(bytes)
+
+	_, err := s.DB.Exec(
+		"INSERT INTO reset_tokens VALUES(?, ?)",
+		token,
+		email,
+	)
+
+	return token, err
+}
+
+func (s *AuthService) VerifySignupToken(token string) (*OnboardingUser, error) {
 	u := OnboardingUser{}
-	err := s.DB.Get(&u, "SELECT first_name, last_name, email, password FROM tokens WHERE token = ?", token)
+	err := s.DB.Get(&u, "SELECT first_name, last_name, email, password FROM signup_tokens WHERE token = ?", token)
 
 	return &u, err
 }
 
-func (s *AuthService) DeleteToken(token string) error {
-	_, err := s.DB.Exec("DELETE FROM tokens WHERE token = ?", token)
+func (s *AuthService) VerifyResetToken(token string) (string, error) {
+	var email string
+	err := s.DB.Get(&email, "SELECT email FROM reset_tokens WHERE token = ?", token)
+
+	return email, err
+}
+
+func (s *AuthService) DeleteSignupToken(token string) error {
+	_, err := s.DB.Exec("DELETE FROM signup_tokens WHERE token = ?", token)
+	return err
+}
+
+func (s *AuthService) DeleteResetToken(token string) error {
+	_, err := s.DB.Exec("DELETE FROM reset_tokens WHERE token = ?", token)
 	return err
 }
 

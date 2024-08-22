@@ -32,13 +32,15 @@ templ Base() {
 			<script defer src="/assets/alpinejs.min.js"></script>
 			<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3216749700593180" crossorigin="anonymous"></script>
 		</head>
-		<body class="flex flex-col min-h-screen" hx-boost="true">
+		<body class="flex flex-col min-h-screen" hx-indicator="#loader" hx-boost="true">
 
 			<!-- Google Tag Manager (noscript) -->
 			<noscript>
 				<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NDHM7MHD" height="0" width="0" style="display:none;visibility:hidden"></iframe>
 			</noscript>
 			<!-- End Google Tag Manager (noscript) -->
+
+			<div id="loader" class="fixed top-0 left-0 z-[9999] w-screen h-1 bg-indigo-700 [&.htmx-request]:animate-pulse htmx-indicator"></div>
 
 			{ children... }
 		</body>

@@ -49,9 +49,9 @@ func (h *MeHandler) Router() chi.Router {
 	r.Get("/listings/create/districts", h.GetCreateListingDistricts)
 	r.Get("/listings/create/cities", h.GetCreateListingCities)
 
+	r.Post("/listings/create", h.PostCreateListing)
 	r.Post("/settings/password", h.PostSettingsPassword)
 	r.Post("/settings/photo", h.PostSettingsPhoto)
-	r.Post("/listings/create", h.PostCreateListing)
 
 	return r
 }

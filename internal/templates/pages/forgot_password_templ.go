@@ -10,19 +10,20 @@ import "context"
 import "io"
 import "bytes"
 
-import "github.com/sakithb/hcblk-server/internal/templates/shared"
-import "github.com/sakithb/hcblk-server/internal/templates/components"
+import (
+	"github.com/sakithb/hcblk-server/internal/templates/components"
+	"github.com/sakithb/hcblk-server/internal/templates/shared"
+)
 
-type LoginProps struct {
-	Invalid     bool
+type ForgotPasswordProps struct {
+	Success     bool
 	ServerError bool
+	EmailError  bool
 
-	Email      string
-	Password   string
-	RememberMe bool
+	Email string
 }
 
-func LoginForm(props *LoginProps) templ.Component {
+func ForgotPasswordForm(props *ForgotPasswordProps) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -35,12 +36,17 @@ func LoginForm(props *LoginProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"flex flex-col gap-3 p-4 md:w-[25vw] md:shadow-md rounded md:border border-neutral-100 bg-white self-stretch md:self-center\" hx-post=\"/auth/login\" hx-trigger=\"submit\" hx-swap=\"outerHTML\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form class=\"flex flex-col gap-3 p-4 md:w-[25vw] md:shadow-md rounded md:border border-neutral-100 bg-white self-stretch md:self-center\" hx-post=\"/auth/forgot_password\" hx-trigger=\"submit\" hx-swap=\"outerHTML\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.Invalid {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"p-4 bg-red-100 text-red-700\">Email or password is incorrect</span>")
+		if props.Success {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"p-4 bg-emerald-100 text-emerald-700\">A link has been sent to the email address provided.</span>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else if props.EmailError {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span class=\"p-4 bg-red-100 text-red-700\">The email address provided is invalid.</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -57,36 +63,13 @@ func LoginForm(props *LoginProps) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/login.templ`, Line: 24, Col: 167}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/forgot_password.templ`, Line: 27, Col: 167}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><div class=\"flex flex-col gap-1\"><label class=\"[&amp;:has(+_:focus)]:text-indigo-700 transition-colors\" for=\"password\">Password</label> <input class=\"p-1 rounded border border-neutral-300 outline-none focus:border-indigo-700 transition-colors\" type=\"password\" name=\"password\" id=\"password\" value=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(props.Password)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/login.templ`, Line: 28, Col: 179}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><div class=\"inline-flex items-center gap-2\"><label class=\"text-base\" for=\"remember-me\">Keep me logged in</label> <input class=\"appearance-none size-4 border border-neutral-300 rounded-sm bg-white checked:border-none checked:bg-indigo-700\" type=\"checkbox\" name=\"remember_me\" id=\"remember-me\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if props.RememberMe {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" checked")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("></div><div class=\"inline-flex flex-col mt-4\"><button class=\"bg-indigo-700 text-white p-1 rounded hover:bg-indigo-600 transition-colors\">Log in</button><div class=\"inline-flex justify-between\"><a class=\"text-sm text-indigo-700 self-start mt-2\" href=\"/auth/forgot_password\">Forgot password?</a> <a class=\"text-sm text-indigo-700 self-end mt-2\" href=\"/auth/signup\">Not a user yet?</a></div></div></form>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"></div><div class=\"inline-flex flex-col mt-4\"><button class=\"bg-indigo-700 text-white p-1 rounded hover:bg-indigo-600 transition-colors\">Change Password</button></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -97,7 +80,7 @@ func LoginForm(props *LoginProps) templ.Component {
 	})
 }
 
-func Login(props *LoginProps) templ.Component {
+func ForgotPassword(props *ForgotPasswordProps) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -105,12 +88,12 @@ func Login(props *LoginProps) templ.Component {
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var5 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var4 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 			if !templ_7745c5c3_IsBuffer {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
@@ -124,7 +107,7 @@ func Login(props *LoginProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = LoginForm(props).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = ForgotPasswordForm(props).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -137,7 +120,7 @@ func Login(props *LoginProps) templ.Component {
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = shared.Base().Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = shared.Base().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

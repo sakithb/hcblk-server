@@ -41,14 +41,23 @@ const (
 		)
 	`
 
-	TOKENS_SCHEMA = `
+	SIGNUP_TOKENS_SCHEMA = `
 		CREATE TABLE IF NOT EXISTS
-		tokens(
+		signup_tokens(
 			token      VARCHAR(50) NOT NULL,
 			first_name VARCHAR(30) NOT NULL,
 			last_name  VARCHAR(30),
 			email      VARCHAR(255) NOT NULL,
 			password   VARCHAR(120) NOT NULL,
+			PRIMARY KEY(token)
+		)
+	`
+
+	RESET_TOKENS_SCHEMA = `
+		CREATE TABLE IF NOT EXISTS
+		reset_tokens(
+			token      VARCHAR(50) NOT NULL,
+			email      VARCHAR(255) NOT NULL,
 			PRIMARY KEY(token)
 		)
 	`
@@ -82,7 +91,12 @@ func New() *sqlx.DB {
 		log.Fatalln(err)
 	}
 
-	_, err = db.Exec(TOKENS_SCHEMA)
+	_, err = db.Exec(SIGNUP_TOKENS_SCHEMA)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = db.Exec(RESET_TOKENS_SCHEMA)
 	if err != nil {
 		log.Fatalln(err)
 	}
