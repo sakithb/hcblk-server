@@ -11,5 +11,5 @@ services:
       - 3000:8080
     volumes:
       - /var/log/hcblk/:/var/log/hcblk/:rw
-      - /var/lib/hcblk/assets/:/app/assets/
+      - /var/lib/hcblk/assets/:/app/assets/:rw
 
