@@ -1,4 +1,4 @@
 builds
 assets/dist/listings
-assets/data.db
+assets/db/data.db
 views/*_templ.go

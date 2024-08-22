@@ -12,7 +12,7 @@ services:
     volumes:
       - logs:/var/log/hcblk/
       - db:/app/assets/db/
-      - listings:/app/assets/listings/
+      - listings:/app/assets/dist/listings/
 
 volumes:
   logs:
