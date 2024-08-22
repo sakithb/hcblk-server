@@ -10,6 +10,27 @@ services:
     ports:
       - 3000:8080
     volumes:
-      - /var/log/hcblk/:/var/log/hcblk/:rw
-      - /var/lib/hcblk/db/:/app/assets/db/:rw
+      - logs:/var/log/hcblk/
+      - db:/app/assets/db/
+      - listings:/app/assets/listings/
+
+volumes:
+  logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/log/hcblk/
+  db:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/hcblk/db/
+  listings:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/lib/hcblk/listings/
 
