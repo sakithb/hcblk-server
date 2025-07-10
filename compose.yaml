@@ -12,7 +12,7 @@ services:
     volumes:
       - logs:/var/log/hcblk/
       - db:/app/assets/db/
-      - listings:/app/assets/dist/listings/
+      - dist:/app/assets/dist/
 
 volumes:
   logs:
@@ -20,17 +20,17 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /var/log/hcblk/
+      device: ./data/logs/
   db:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /var/lib/hcblk/db/
-  listings:
+      device: ./data/db/
+  dist:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /var/lib/hcblk/listings/
+      device: ./assets/dist/
 
